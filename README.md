@@ -40,6 +40,16 @@ This plugin listens to the following events:
               <username>${env.GITUB_USER}</username>
               <password>${env.GITHUB_TOKEN}</password>
             </server>
+            <server>
+              <id>wutsi-site-sdk-kotlin</id>
+              <username>${env.GITUB_USER}</username>
+              <password>${env.GITHUB_TOKEN}</password>
+            </server>
+            <server>
+              <id>wutsi-story-sdk-kotlin</id>
+              <username>${env.GITUB_USER}</username>
+              <password>${env.GITHUB_TOKEN}</password>
+            </server>
         </servers>
     </settings>
 ```
