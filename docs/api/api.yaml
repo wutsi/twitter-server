@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: Wutsi Twitter API
+  description: |
+    API for sharing stories on Twitter.
+  version: 1.0.0
+servers:
+  - url: 'https://wutsi-twitter-test.herokuapp.com'
+    description: Sandbox
+  - url: 'https://wutsi-twitter-prod.herokuapp.com'
+    description: Sandbox
+paths:
+  /v1/twitter/share:
+    get:
+      operationId: share
+      summary: Share a Story
+      parameters:
+        - in: query
+          name: story-id
+          description: ID of the story to share
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Success
+      tags:
+        - Twitter
+  '/v1/twitter/secrets/{user-id}':
+    post:
+      operationId: store-secret
+      summary: Store Twitter secret information
+      description: |
+        Store the secrets for a Twitter user.
+        The secrets includes access-token and access-token-secret
+      parameters:
+        - in: path
+          name: user-id
+          description: ID of the user
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveSecretRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveSecretResponse'
+      tags:
+        - Twitter
+components:
+  schemas:
+    SaveSecretRequest:
+      type: object
+      properties:
+        siteId:
+          type: integer
+          format: int64
+          example: 1
+        twitterId:
+          type: integer
+          format: int64
+          example: 1
+        accessToken:
+          type: string
+        accessTokenSecret:
+          type: string
+      required:
+        - twitterId
+        - accessToken
+        - accessTokenSecret
+    SaveSecretResponse:
+      type: object
+      properties:
+        secretId:
+          type: integer
+          format: int64
+          example: 123
