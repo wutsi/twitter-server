@@ -28,22 +28,23 @@ internal class StoreSecretControllerTest {
 
     @BeforeEach
     fun setUp() {
-        url = "http://localhost:$port/v1/twitter/secrets/{user-id}"
+        url = "http://localhost:$port/v1/twitter/secrets"
     }
 
     @Test
     fun `create secret`() {
         val request = StoreSecretRequest(
             siteId = 1L,
+            userId = 11L,
             accessTokenSecret = "secret",
             accessToken = "token",
             twitterId = 111L
         )
-        val response = rest.postForEntity(url, request, StoreSecretResponse::class.java, 11L)
+        val response = rest.postForEntity(url, request, StoreSecretResponse::class.java)
         assertEquals(OK, response.statusCode)
 
         val secret = dao.findById(response.body.secretId).get()
-        assertEquals(11L, secret.userId)
+        assertEquals(request.userId, secret.userId)
         assertEquals(request.siteId, secret.siteId)
         assertEquals(request.accessToken, secret.accessToken)
         assertEquals(secret.accessTokenSecret, secret.accessTokenSecret)
@@ -53,15 +54,16 @@ internal class StoreSecretControllerTest {
     fun `update secret`() {
         val request = StoreSecretRequest(
             siteId = 1L,
+            userId = 1L,
             accessTokenSecret = "secret",
             accessToken = "token",
             twitterId = 111L
         )
-        val response = rest.postForEntity(url, request, StoreSecretResponse::class.java, 1L)
+        val response = rest.postForEntity(url, request, StoreSecretResponse::class.java)
         assertEquals(OK, response.statusCode)
 
         val secret = dao.findById(response.body.secretId).get()
-        assertEquals(1L, secret.userId)
+        assertEquals(request.userId, secret.userId)
         assertEquals(request.siteId, secret.siteId)
         assertEquals(request.accessToken, secret.accessToken)
         assertEquals(secret.accessTokenSecret, secret.accessTokenSecret)

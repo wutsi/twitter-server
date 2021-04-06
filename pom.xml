@@ -19,8 +19,8 @@
   </parent>
 
   <properties>
-    <jacoco.threshold.line>0.79</jacoco.threshold.line>
-    <jacoco.threshold.class>0.79</jacoco.threshold.class>
+    <jacoco.threshold.line>0.85</jacoco.threshold.line>
+    <jacoco.threshold.class>0.85</jacoco.threshold.class>
     <jacoco-maven-plugin.version>0.8.2</jacoco-maven-plugin.version>
     <jdk.version>11</jdk.version>
 
@@ -40,6 +40,7 @@
     <wutsi-stream-rabbitmq.version>1.0.0</wutsi-stream-rabbitmq.version>
     <wutsi-site-sdk.version>1.0.1</wutsi-site-sdk.version>
     <wutsi-story-sdk.version>0.0.6</wutsi-story-sdk.version>
+    <wutsi-twitter-sdk.version>1.2.0</wutsi-twitter-sdk.version>
   </properties>
 
   <dependencies>
@@ -52,6 +53,11 @@
       <groupId>com.wutsi.story</groupId>
       <artifactId>story-sdk-kotlin</artifactId>
       <version>${wutsi-story-sdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.wutsi.twitter</groupId>
+      <artifactId>twitter-sdk-kotlin</artifactId>
+      <version>${wutsi-twitter-sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>net.swisstech</groupId>

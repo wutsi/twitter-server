@@ -13,20 +13,20 @@ public class StoreSecretDelegate(
     private val dao: SecretRepository
 ) {
     @Transactional
-    fun invoke(userId: Long, request: StoreSecretRequest): StoreSecretResponse {
-        val opt = dao.findByUserIdAndSiteId(userId, request.siteId)
+    fun invoke(request: StoreSecretRequest): StoreSecretResponse {
+        val opt = dao.findByUserIdAndSiteId(request.userId, request.siteId)
         val secret = if (opt.isPresent)
             update(opt.get(), request)
         else
-            create(userId, request)
+            create(request)
 
         return StoreSecretResponse(secretId = secret.id!!)
     }
 
-    private fun create(userId: Long, request: StoreSecretRequest): SecretEntity {
+    private fun create(request: StoreSecretRequest): SecretEntity {
         return dao.save(
             SecretEntity(
-                userId = userId,
+                userId = request.userId,
                 siteId = request.siteId,
                 twitterId = request.twitterId,
                 accessToken = request.accessToken,

@@ -124,7 +124,7 @@ internal class ShareControllerTest {
     }
 
     @Test
-    fun `send message to Twitter when story is sent`() {
+    fun `send message to Twitter when story is sent with socialMediaMessage`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
 
@@ -134,6 +134,19 @@ internal class ShareControllerTest {
         rest.getForEntity(url, Any::class.java, "123")
 
         verify(twitter).updateStatus("This is nice https://bit.ly/123")
+    }
+
+    @Test
+    fun `send message to Twitter when story is sent without socialMediaMessage`() {
+        val site = createSite()
+        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+
+        val story = createStory(socialMediaMessage = null)
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        rest.getForEntity(url, Any::class.java, "123")
+
+        verify(twitter).updateStatus("${story.title} https://bit.ly/123")
     }
 
     @Test
@@ -155,7 +168,7 @@ internal class ShareControllerTest {
     }
 
     @Test
-    fun `do not send message to Twitter not avaialble`() {
+    fun `do not send message to Twitter not available`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
 
@@ -169,11 +182,11 @@ internal class ShareControllerTest {
         verify(twitter, never()).updateStatus(anyString())
     }
 
-    private fun createStory() = Story(
+    private fun createStory(socialMediaMessage: String? = "This is nice") = Story(
         id = 123L,
         title = "This is a story title",
         slug = "/read/123/this-is-a-story-title",
-        socialMediaMessage = "This is nice",
+        socialMediaMessage = socialMediaMessage,
         userId = 1L
     )
 

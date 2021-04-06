@@ -4,7 +4,10 @@ import com.wutsi.story.event.StoryEventPayload
 import com.wutsi.story.event.StoryEventType
 import com.wutsi.stream.Event
 import com.wutsi.stream.ObjectMapperBuilder
+import com.wutsi.twitter.delegate.RevokeSecretDelegate
 import com.wutsi.twitter.delegate.ShareDelegate
+import com.wutsi.twitter.delegate.StoreSecretDelegate
+import com.wutsi.twitter.dto.StoreSecretRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.EventListener
@@ -12,7 +15,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class EventHandler(
-    @Autowired private val shareDelegate: ShareDelegate
+    @Autowired private val shareDelegate: ShareDelegate,
+    @Autowired private val storeSecretDelegate: StoreSecretDelegate,
+    @Autowired private val revokeSecretDelegate: RevokeSecretDelegate
 ) {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(EventHandler::class.java)
@@ -25,6 +30,23 @@ class EventHandler(
         if (event.type == StoryEventType.PUBLISHED.urn) {
             val payload = ObjectMapperBuilder().build().readValue(event.payload, StoryEventPayload::class.java)
             shareDelegate.invoke(payload.storyId)
+        } else if (event.type == TwitterEventType.SECRET_SUBMITTED.urn) {
+            val payload = ObjectMapperBuilder().build().readValue(event.payload, TwitterSecretSubmittedEventPayload::class.java)
+            storeSecretDelegate.invoke(
+                request = StoreSecretRequest(
+                    userId = payload.userId,
+                    siteId = payload.siteId,
+                    twitterId = payload.twitterId,
+                    accessToken = payload.accessToken,
+                    accessTokenSecret = payload.accessTokenSecret
+                )
+            )
+        } else if (event.type == TwitterEventType.SECRET_REVOKED.urn) {
+            val payload = ObjectMapperBuilder().build().readValue(event.payload, TwitterSecretRevokedEventPayload::class.java)
+            revokeSecretDelegate.invoke(
+                userId = payload.userId,
+                siteId = payload.siteId
+            )
         }
     }
 }

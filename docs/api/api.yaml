@@ -27,43 +27,56 @@ paths:
           description: Success
       tags:
         - Twitter
-  '/v1/twitter/secrets/{user-id}':
+  /v1/twitter/secrets:
     post:
       operationId: store-secret
       summary: Store Twitter secret information
       description: |
         Store the secrets for a Twitter user.
         The secrets includes access-token and access-token-secret
-      parameters:
-        - in: path
-          name: user-id
-          description: ID of the user
-          required: true
-          schema:
-            type: integer
-            format: int64
       requestBody:
         description: request
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SaveSecretRequest'
+              $ref: '#/components/schemas/StoreSecretRequest'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SaveSecretResponse'
+                $ref: '#/components/schemas/StoreSecretResponse'
+      tags:
+        - Twitter
+  '/v1/twitter/secrets/{id}':
+    delete:
+      operationId: revoke-secret
+      summary: Revoke Twitter secret information
+      parameters:
+        - in: path
+          name: id
+          description: ID of secret to revoke
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Success
       tags:
         - Twitter
 components:
   schemas:
-    SaveSecretRequest:
+    StoreSecretRequest:
       type: object
       properties:
         siteId:
+          type: integer
+          format: int64
+          example: 1
+        userId:
           type: integer
           format: int64
           example: 1
@@ -76,10 +89,12 @@ components:
         accessTokenSecret:
           type: string
       required:
+        - userId
+        - siteId
         - twitterId
         - accessToken
         - accessTokenSecret
-    SaveSecretResponse:
+    StoreSecretResponse:
       type: object
       properties:
         secretId:

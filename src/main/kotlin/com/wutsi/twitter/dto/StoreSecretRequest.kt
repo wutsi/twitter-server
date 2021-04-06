@@ -2,9 +2,14 @@ package com.wutsi.twitter.dto
 
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
+import kotlin.Long
+import kotlin.String
 
 public data class StoreSecretRequest(
+    @get:NotNull
     public val siteId: Long = 0,
+    @get:NotNull
+    public val userId: Long = 0,
     @get:NotNull
     public val twitterId: Long = 0,
     @get:NotBlank
