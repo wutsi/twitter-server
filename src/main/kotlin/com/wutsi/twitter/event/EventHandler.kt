@@ -45,6 +45,8 @@ class EventHandler(
                         accessTokenSecret = payload.accessTokenSecret
                     )
                 )
+            } else {
+                LOGGER.info("Ignore event for ${payload.type}")
             }
         } else if (event.type == ChannelEventType.SECRET_REVOKED.urn) {
             val payload = ObjectMapperBuilder().build().readValue(event.payload, ChannelSecretRevokedEventPayload::class.java)
@@ -53,6 +55,8 @@ class EventHandler(
                     userId = payload.userId,
                     siteId = payload.siteId
                 )
+            } else {
+                LOGGER.info("Ignore event for ${payload.type}")
             }
         }
     }
