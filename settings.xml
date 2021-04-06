@@ -18,12 +18,22 @@
     </server>
 
     <server>
+      <id>wutsi-channel-sdk-kotlin</id>
+      <username>wutsi</username>
+      <password>${GITHUB_TOKEN}</password>
+    </server>
+    <server>
       <id>wutsi-site-sdk-kotlin</id>
       <username>wutsi</username>
       <password>${GITHUB_TOKEN}</password>
     </server>
     <server>
       <id>wutsi-story-sdk-kotlin</id>
+      <username>wutsi</username>
+      <password>${GITHUB_TOKEN}</password>
+    </server>
+    <server>
+      <id>wutsi-twitter-sdk-kotlin</id>
       <username>wutsi</username>
       <password>${GITHUB_TOKEN}</password>
     </server>

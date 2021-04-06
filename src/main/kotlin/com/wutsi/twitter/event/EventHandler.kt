@@ -1,5 +1,8 @@
 package com.wutsi.twitter.event
 
+import com.wutsi.channel.event.ChannelEventType
+import com.wutsi.channel.event.ChannelSecretRevokedEventPayload
+import com.wutsi.channel.event.ChannelSecretSubmittedEventPayload
 import com.wutsi.story.event.StoryEventPayload
 import com.wutsi.story.event.StoryEventType
 import com.wutsi.stream.Event
@@ -30,23 +33,27 @@ class EventHandler(
         if (event.type == StoryEventType.PUBLISHED.urn) {
             val payload = ObjectMapperBuilder().build().readValue(event.payload, StoryEventPayload::class.java)
             shareDelegate.invoke(payload.storyId)
-        } else if (event.type == TwitterEventType.SECRET_SUBMITTED.urn) {
-            val payload = ObjectMapperBuilder().build().readValue(event.payload, TwitterSecretSubmittedEventPayload::class.java)
-            storeSecretDelegate.invoke(
-                request = StoreSecretRequest(
-                    userId = payload.userId,
-                    siteId = payload.siteId,
-                    twitterId = payload.twitterId,
-                    accessToken = payload.accessToken,
-                    accessTokenSecret = payload.accessTokenSecret
+        } else if (event.type == ChannelEventType.SECRET_SUBMITTED.urn) {
+            val payload = ObjectMapperBuilder().build().readValue(event.payload, ChannelSecretSubmittedEventPayload::class.java)
+            if (payload.type == "twitter") {
+                storeSecretDelegate.invoke(
+                    request = StoreSecretRequest(
+                        userId = payload.userId,
+                        siteId = payload.siteId,
+                        twitterId = payload.twitterId,
+                        accessToken = payload.accessToken,
+                        accessTokenSecret = payload.accessTokenSecret
+                    )
                 )
-            )
-        } else if (event.type == TwitterEventType.SECRET_REVOKED.urn) {
-            val payload = ObjectMapperBuilder().build().readValue(event.payload, TwitterSecretRevokedEventPayload::class.java)
-            revokeSecretDelegate.invoke(
-                userId = payload.userId,
-                siteId = payload.siteId
-            )
+            }
+        } else if (event.type == ChannelEventType.SECRET_REVOKED.urn) {
+            val payload = ObjectMapperBuilder().build().readValue(event.payload, ChannelSecretRevokedEventPayload::class.java)
+            if (payload.type == "twitter") {
+                revokeSecretDelegate.invoke(
+                    userId = payload.userId,
+                    siteId = payload.siteId
+                )
+            }
         }
     }
 }

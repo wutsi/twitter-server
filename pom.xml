@@ -37,13 +37,19 @@
     <postgresql.version>42.2.19</postgresql.version>
     <flyway.version>7.7.0</flyway.version>
     <twitter4j.version>4.0.7</twitter4j.version>
+    <wutsi-channel-sdk.version>1.0.0</wutsi-channel-sdk.version>
     <wutsi-stream-rabbitmq.version>1.0.0</wutsi-stream-rabbitmq.version>
     <wutsi-site-sdk.version>1.0.1</wutsi-site-sdk.version>
     <wutsi-story-sdk.version>0.0.6</wutsi-story-sdk.version>
-    <wutsi-twitter-sdk.version>1.2.0</wutsi-twitter-sdk.version>
+    <wutsi-twitter-sdk.version>1.3.0</wutsi-twitter-sdk.version>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>com.wutsi.channel</groupId>
+      <artifactId>channel-sdk-kotlin</artifactId>
+      <version>${wutsi-channel-sdk.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.wutsi.site</groupId>
       <artifactId>site-sdk-kotlin</artifactId>

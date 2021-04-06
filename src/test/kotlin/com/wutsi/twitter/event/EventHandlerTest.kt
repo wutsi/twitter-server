@@ -3,6 +3,7 @@ package com.wutsi.twitter.event
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
+import com.wutsi.channel.event.ChannelEventType
 import com.wutsi.story.event.StoryEventType.PUBLISHED
 import com.wutsi.stream.Event
 import com.wutsi.twitter.delegate.RevokeSecretDelegate
@@ -53,14 +54,15 @@ internal class EventHandlerTest {
         handler.onEvent(
             Event(
                 id = UUID.randomUUID().toString(),
-                type = TwitterEventType.SECRET_SUBMITTED.urn,
+                type = ChannelEventType.SECRET_SUBMITTED.urn,
                 payload = """
                     {
                         "userId": 11,
                         "siteId": 1,
                         "twitterId": 4409403,
                         "accessToken": "token",
-                        "accessTokenSecret": "secret"
+                        "accessTokenSecret": "secret",
+                        "type": "twitter"
                     }
                 """.trimIndent()
             )
@@ -81,11 +83,12 @@ internal class EventHandlerTest {
         handler.onEvent(
             Event(
                 id = UUID.randomUUID().toString(),
-                type = TwitterEventType.SECRET_REVOKED.urn,
+                type = ChannelEventType.SECRET_REVOKED.urn,
                 payload = """
                     {
                         "userId": 11,
-                        "siteId": 1
+                        "siteId": 1,
+                        "type": "twitter"
                     }
                 """.trimIndent()
             )
