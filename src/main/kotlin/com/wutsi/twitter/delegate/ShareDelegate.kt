@@ -38,8 +38,11 @@ public class ShareDelegate(
         if (!enabled(site))
             return
 
-        val account = secretDao.findByUserIdAndSiteId(story.userId, site.id).orElseGet(null) ?: return
+        val opt = secretDao.findByUserIdAndSiteId(story.userId, site.id)
+        if (!opt.isPresent)
+            return
 
+        val account = opt.get()
         try {
             val status = share(story, account, site)
             if (status != null) {
@@ -55,6 +58,7 @@ public class ShareDelegate(
         val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site) ?: return null
 
         val text = text(story, site)
+        LOGGER.info("Sharing to ${secret.twitterId}: $text")
         return twitter.updateStatus(text)
     }
 

@@ -36,17 +36,17 @@ This plugin listens to the following events:
         <servers>
             ...
             <server>
-              <id>wutsi-stream-rabbitmq</id>
-              <username>${env.GITUB_USER}</username>
-              <password>${env.GITHUB_TOKEN}</password>
-            </server>
-            <server>
               <id>wutsi-site-sdk-kotlin</id>
               <username>${env.GITUB_USER}</username>
               <password>${env.GITHUB_TOKEN}</password>
             </server>
             <server>
               <id>wutsi-story-sdk-kotlin</id>
+              <username>${env.GITUB_USER}</username>
+              <password>${env.GITHUB_TOKEN}</password>
+            </server>
+            <server>
+              <id>wutsi-stream-rabbitmq</id>
               <username>${env.GITUB_USER}</username>
               <password>${env.GITHUB_TOKEN}</password>
             </server>
