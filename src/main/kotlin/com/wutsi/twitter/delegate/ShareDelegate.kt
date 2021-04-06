@@ -38,19 +38,34 @@ public class ShareDelegate(
         if (!enabled(site))
             return
 
-        val opt = secretDao.findByUserIdAndSiteId(story.userId, site.id)
-        if (!opt.isPresent)
-            return
+        val secret = findSecret(story, site) ?: return
+        tweet(story, secret, site)
+    }
 
-        val account = opt.get()
+    private fun findSecret(story: Story, site: Site): SecretEntity? {
+        // Find account of the author of the story
+        var opt = secretDao.findByUserIdAndSiteId(story.userId, site.id)
+        if (opt.isPresent)
+            return opt.get()
+
+        // Author doesn't have twitter account, return the primary user
+        val userId = userId(site) ?: return null
+        opt = secretDao.findByUserIdAndSiteId(userId, site.id)
+        return if (opt.isPresent)
+            opt.get()
+        else
+            null
+    }
+
+    private fun tweet(story: Story, secret: SecretEntity, site: Site) {
         try {
-            val status = share(story, account, site)
+            val status = share(story, secret, site)
             if (status != null) {
-                save(story, site, account, status)
+                save(story, site, secret, status)
             }
         } catch (ex: TwitterException) {
             LOGGER.error("Unable to share the story", ex)
-            save(story, site, account, ex)
+            save(story, site, secret, ex)
         }
     }
 
@@ -106,4 +121,12 @@ public class ShareDelegate(
 
     private fun enabled(site: Site): Boolean =
         site.attributes.find { AttributeUrn.ENABLED.urn == it.urn }?.value == "true"
+
+    private fun userId(site: Site): Long? {
+        try {
+            return site.attributes.find { AttributeUrn.USER_ID.urn == it.urn }?.value?.toLong()
+        } catch (ex: Exception) {
+            return null
+        }
+    }
 }

@@ -150,6 +150,49 @@ internal class ShareControllerTest {
     }
 
     @Test
+    @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
+    fun `send message to Twitter using primary account - author has no twitter secret`() {
+        val site = createSite()
+        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+
+        val story = createStory(socialMediaMessage = null, userId = 999)
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        val status = createStatus(11L, 111L)
+        doReturn(status).whenever(twitter).updateStatus(anyString())
+
+        rest.getForEntity(url, Any::class.java, "123")
+
+        verify(twitter).updateStatus("${story.title} https://bit.ly/123")
+
+        val shares = dao.findAll().toList()[0]
+        assertEquals(666, shares.secret.id)
+    }
+
+    @Test
+    @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
+    fun `do not send message to Twitter when no primary account set - author has no twitter secret`() {
+        val site = createSite(
+            attributes = listOf(
+                Attribute(AttributeUrn.ENABLED.urn, "true"),
+                Attribute(AttributeUrn.CLIENT_SECRET.urn, "client-secret"),
+                Attribute(AttributeUrn.CLIENT_ID.urn, "client-id")
+            )
+        )
+        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+
+        val story = createStory(socialMediaMessage = null, userId = 999)
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        rest.getForEntity(url, Any::class.java, "123")
+
+        verify(twitter, never()).updateStatus(anyString())
+
+        val shares = dao.findAll()
+        assertTrue(shares.toList().isEmpty())
+    }
+
+    @Test
     fun `do not send message to Twitter when not enabled`() {
         val site = createSite(
             attributes = listOf(
@@ -182,12 +225,15 @@ internal class ShareControllerTest {
         verify(twitter, never()).updateStatus(anyString())
     }
 
-    private fun createStory(socialMediaMessage: String? = "This is nice") = Story(
+    private fun createStory(
+        userId: Long = 1L,
+        socialMediaMessage: String? = "This is nice"
+    ) = Story(
         id = 123L,
         title = "This is a story title",
         slug = "/read/123/this-is-a-story-title",
         socialMediaMessage = socialMediaMessage,
-        userId = 1L
+        userId = userId
     )
 
     private fun createSite(
@@ -195,6 +241,7 @@ internal class ShareControllerTest {
             Attribute(AttributeUrn.ENABLED.urn, "true"),
             Attribute(AttributeUrn.CLIENT_SECRET.urn, "client-secret"),
             Attribute(AttributeUrn.CLIENT_ID.urn, "client-id"),
+            Attribute(AttributeUrn.USER_ID.urn, "666")
         )
     ) = Site(
         id = 1L,
