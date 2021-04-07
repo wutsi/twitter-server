@@ -39,5 +39,8 @@ data class ShareEntity(
     val errorCode: Int? = null,
 
     @Column(name = "error_description")
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+
+    @Column(name = "post_id")
+    val postId: Long? = null
 )

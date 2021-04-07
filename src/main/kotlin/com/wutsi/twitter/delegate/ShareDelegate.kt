@@ -4,18 +4,24 @@ import com.wutsi.site.SiteApi
 import com.wutsi.site.dto.Site
 import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.Story
+import com.wutsi.stream.EventStream
 import com.wutsi.twitter.AttributeUrn
 import com.wutsi.twitter.dao.SecretRepository
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.entity.SecretEntity
 import com.wutsi.twitter.entity.ShareEntity
+import com.wutsi.twitter.event.TwitterEventType
+import com.wutsi.twitter.event.TwitterSharedEventPayload
 import com.wutsi.twitter.service.bitly.BitlyUrlShortener
 import com.wutsi.twitter.service.twitter.TwitterProvider
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import twitter4j.Status
+import twitter4j.StatusUpdate
 import twitter4j.TwitterException
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.transaction.Transactional
 
 @Service
@@ -25,21 +31,37 @@ public class ShareDelegate(
     @Autowired private val shareDao: ShareRepository,
     @Autowired private val secretDao: SecretRepository,
     @Autowired private val bitly: BitlyUrlShortener,
-    @Autowired private val twitterProvider: TwitterProvider
+    @Autowired private val twitterProvider: TwitterProvider,
+    @Autowired private val eventStream: EventStream
 ) {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(ShareDelegate::class.java)
     }
 
     @Transactional
-    fun invoke(storyId: Long) {
+    fun invoke(
+        storyId: Long,
+        message: String? = null,
+        pictureUrl: String? = null,
+        includeLink: Boolean = true,
+        postId: Long? = null
+    ) {
         val story = storyApi.get(storyId).story
         val site = siteApi.get(1).site
         if (!enabled(site))
             return
 
         val secret = findSecret(story, site) ?: return
-        share(story, secret, site)
+        val status = share(story, secret, site, message, pictureUrl, includeLink, postId)
+        if (status != null) {
+            eventStream.publish(
+                type = TwitterEventType.SHARED.urn,
+                payload = TwitterSharedEventPayload(
+                    twitterStatusId = status.id,
+                    postId = postId
+                )
+            )
+        }
     }
 
     private fun findSecret(story: Story, site: Site): SecretEntity? {
@@ -57,29 +79,59 @@ public class ShareDelegate(
             null
     }
 
-    private fun share(story: Story, secret: SecretEntity, site: Site): Status? {
+    private fun share(
+        story: Story,
+        secret: SecretEntity,
+        site: Site,
+        message: String?,
+        pictureUrl: String?,
+        includeLink: Boolean,
+        postId: Long?
+    ): Status? {
+        var status: Status? = null
         try {
-            val status = tweet(story, secret, site)
+            status = tweet(story, secret, site, message, pictureUrl, includeLink)
             if (status != null) {
                 retweet(status, secret, site)
-
-                save(story, site, secret, status)
             }
-
             return status
         } catch (ex: Exception) {
             LOGGER.error("Unable to share the story", ex)
-            save(story, site, secret, ex)
+            save(story, site, secret, ex, postId)
             return null
+        } finally {
+            if (status != null) {
+                save(story, site, secret, status, postId)
+            }
         }
     }
 
-    private fun tweet(story: Story, secret: SecretEntity, site: Site): Status? {
+    private fun tweet(
+        story: Story,
+        secret: SecretEntity,
+        site: Site,
+        message: String?,
+        pictureUrl: String?,
+        includeLink: Boolean
+    ): Status? {
         val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site) ?: return null
 
-        val text = text(story, site)
-        LOGGER.info("Tweeting to ${secret.twitterId}: $text")
-        return twitter.updateStatus(text)
+        val text = text(story, site, message, includeLink)
+        if (pictureUrl.isNullOrEmpty()) {
+            LOGGER.info("Tweeting to ${secret.twitterId}: $text")
+            return twitter.updateStatus(text)
+        } else {
+            val url = URL(pictureUrl)
+            val cnn = url.openConnection() as HttpURLConnection
+            try {
+                LOGGER.info("Tweeting to ${secret.twitterId} the picture $pictureUrl: $text")
+                val update = StatusUpdate(text)
+                update.media(url.file, cnn.inputStream)
+                return twitter.updateStatus(update)
+            } finally {
+                cnn.disconnect()
+            }
+        }
     }
 
     private fun retweet(status: Status, secret: SecretEntity, site: Site) {
@@ -100,7 +152,13 @@ public class ShareDelegate(
         }
     }
 
-    private fun save(story: Story, site: Site, secret: SecretEntity, ex: Exception) {
+    private fun save(
+        story: Story,
+        site: Site,
+        secret: SecretEntity,
+        ex: Exception,
+        postId: Long?
+    ) {
         val errorCode = if (ex is TwitterException) ex.errorCode else null
         val errorMessage = if (ex is TwitterException) ex.errorMessage else ex.message
         try {
@@ -109,6 +167,7 @@ public class ShareDelegate(
                     storyId = story.id,
                     siteId = site.id,
                     secret = secret,
+                    postId = postId,
                     statusId = null,
                     success = false,
                     errorCode = errorCode,
@@ -120,7 +179,13 @@ public class ShareDelegate(
         }
     }
 
-    private fun save(story: Story, site: Site, secret: SecretEntity, status: Status) {
+    private fun save(
+        story: Story,
+        site: Site,
+        secret: SecretEntity,
+        status: Status,
+        postId: Long?
+    ) {
         try {
             shareDao.save(
                 ShareEntity(
@@ -128,6 +193,7 @@ public class ShareDelegate(
                     siteId = site.id,
                     secret = secret,
                     statusId = status.id,
+                    postId = postId,
                     success = true
                 )
             )
@@ -136,12 +202,25 @@ public class ShareDelegate(
         }
     }
 
-    private fun text(story: Story, site: Site): String {
-        val url = bitly.shorten("${site.websiteUrl}${story.slug}?utm_source=twitter", site)
-        return if (story.socialMediaMessage.isNullOrEmpty())
-            "${story.title} $url"
+    private fun text(
+        story: Story,
+        site: Site,
+        message: String?,
+        includeLink: Boolean
+    ): String {
+        val text = if (!message.isNullOrEmpty())
+            message
+        else if (!story.socialMediaMessage.isNullOrEmpty())
+            story.socialMediaMessage
         else
-            "${story.socialMediaMessage} $url"
+            story.title
+
+        val url = if (includeLink)
+            bitly.shorten("${site.websiteUrl}${story.slug}?utm_source=twitter", site)
+        else
+            ""
+
+        return "$text $url".trim()
     }
 
     private fun enabled(site: Site): Boolean =

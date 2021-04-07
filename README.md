@@ -8,9 +8,6 @@
 
 Wutsi Plugin for sharing stories on [Twitter](https://www.twitter.com).
 
-This plugin listens to the following events:
-  - `urn:event:wutsi:story:published`: When this event is received, this plugin share the story to the site's twitter account.
-
 # Installation Prerequisites
 ## Database Setup
 - Install postgres
@@ -86,7 +83,7 @@ That's it... the API is up and running! Start sending requests :-)
 
 # Links
 - [API](https://wutsi.github.io/twitter-server/api/)
-
+- [Events](docs/Event.md)
 
 #  Configuration Attributes
 Here are the Site configuration attributes used by this service:

@@ -1,8 +1,10 @@
 package com.wutsi.twitter.endpoint
 
 import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.doThrow
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
@@ -14,8 +16,11 @@ import com.wutsi.site.dto.Site
 import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.GetStoryResponse
 import com.wutsi.story.dto.Story
+import com.wutsi.stream.EventStream
 import com.wutsi.twitter.AttributeUrn
 import com.wutsi.twitter.dao.ShareRepository
+import com.wutsi.twitter.event.TwitterEventType
+import com.wutsi.twitter.event.TwitterSharedEventPayload
 import com.wutsi.twitter.service.bitly.BitlyUrlShortener
 import com.wutsi.twitter.service.twitter.TwitterProvider
 import org.junit.jupiter.api.BeforeEach
@@ -62,6 +67,9 @@ internal class ShareControllerTest {
 
     @MockBean
     private lateinit var bitly: BitlyUrlShortener
+
+    @MockBean
+    private lateinit var eventStream: EventStream
 
     private val shortenUrl = "https://bit.ly/123"
 
@@ -255,6 +263,25 @@ internal class ShareControllerTest {
         rest.getForEntity(url, Any::class.java, "123")
 
         verify(twitter, never()).retweetStatus(any())
+    }
+
+    @Test
+    fun `event send when sharing a story`() {
+        val site = createSite()
+        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+
+        val story = createStory()
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        val status = createStatus(11L, 111L)
+        doReturn(status).whenever(twitter).updateStatus(anyString())
+
+        rest.getForEntity(url, Any::class.java, "123")
+
+        val payload = argumentCaptor<TwitterSharedEventPayload>()
+        verify(eventStream).publish(eq(TwitterEventType.SHARED.urn), payload.capture())
+        assertEquals(11L, payload.firstValue.twitterStatusId)
+        assertNull(payload.firstValue.postId)
     }
 
     private fun createStory(
