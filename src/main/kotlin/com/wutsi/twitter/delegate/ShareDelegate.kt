@@ -39,9 +39,7 @@ public class ShareDelegate(
             return
 
         val secret = findSecret(story, site) ?: return
-        val status = tweet(story, secret, site)
-        if (status != null)
-            retweet(status, secret, site)
+        share(story, secret, site)
     }
 
     private fun findSecret(story: Story, site: Site): SecretEntity? {
@@ -59,43 +57,52 @@ public class ShareDelegate(
             null
     }
 
-    private fun tweet(story: Story, secret: SecretEntity, site: Site): Status? {
+    private fun share(story: Story, secret: SecretEntity, site: Site): Status? {
         try {
-            val status = share(story, secret, site)
-            if (status != null)
+            val status = tweet(story, secret, site)
+            if (status != null) {
+                retweet(status, secret, site)
+
                 save(story, site, secret, status)
+            }
 
             return status
-        } catch (ex: TwitterException) {
+        } catch (ex: Exception) {
             LOGGER.error("Unable to share the story", ex)
             save(story, site, secret, ex)
             return null
         }
     }
 
-    private fun retweet(status: Status, secret: SecretEntity, site: Site) {
-        val userId = userId(site)
-        if (userId == null || userId == secret.userId)
-            return
-
-        val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site) ?: return
-        LOGGER.info("Retweeting ${status.id}")
-        try {
-            twitter.retweetStatus(status.id)
-        } catch (ex: TwitterException) {
-            LOGGER.warn("Unexpected error while retweeting ${status.id}")
-        }
-    }
-
-    private fun share(story: Story, secret: SecretEntity, site: Site): Status? {
+    private fun tweet(story: Story, secret: SecretEntity, site: Site): Status? {
         val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site) ?: return null
 
         val text = text(story, site)
-        LOGGER.info("Sharing to ${secret.twitterId}: $text")
+        LOGGER.info("Tweeting to ${secret.twitterId}: $text")
         return twitter.updateStatus(text)
     }
 
-    private fun save(story: Story, site: Site, secret: SecretEntity, ex: TwitterException) {
+    private fun retweet(status: Status, secret: SecretEntity, site: Site) {
+        try {
+            val userId = userId(site)
+            if (userId == null || userId == secret.userId)
+                return
+
+            val primarySecret = secretDao.findByUserIdAndSiteId(userId, site.id)
+            if (!primarySecret.isPresent)
+                return
+
+            val twitter = twitterProvider.getTwitter(primarySecret.get().accessToken, primarySecret.get().accessTokenSecret, site) ?: return
+            LOGGER.info("Retweeting ${status.id}")
+            twitter.retweetStatus(status.id)
+        } catch (ex: Exception) {
+            LOGGER.warn("Unable to retweet ${status.id}", ex)
+        }
+    }
+
+    private fun save(story: Story, site: Site, secret: SecretEntity, ex: Exception) {
+        val errorCode = if (ex is TwitterException) ex.errorCode else null
+        val errorMessage = if (ex is TwitterException) ex.errorMessage else ex.message
         try {
             shareDao.save(
                 ShareEntity(
@@ -104,8 +111,8 @@ public class ShareDelegate(
                     secret = secret,
                     statusId = null,
                     success = false,
-                    errorCode = ex.errorCode,
-                    errorMessage = ex.errorMessage
+                    errorCode = errorCode,
+                    errorMessage = errorMessage
                 )
             )
         } catch (ex: Exception) {
