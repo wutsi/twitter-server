@@ -1,6 +1,7 @@
 package com.wutsi.twitter.config
 
 import com.wutsi.channel.event.ChannelEventStream
+import com.wutsi.post.event.PostEventStream
 import com.wutsi.story.event.StoryEventStream
 import com.wutsi.stream.EventStream
 import com.wutsi.stream.EventSubscription
@@ -17,4 +18,7 @@ class MQueueConfiguration(
 
     @Bean
     fun channelSubscription() = EventSubscription(ChannelEventStream.NAME, stream)
+
+    @Bean
+    fun postSubscription() = EventSubscription(PostEventStream.NAME, stream)
 }

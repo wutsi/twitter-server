@@ -38,6 +38,7 @@
     <flyway.version>7.7.0</flyway.version>
     <twitter4j.version>4.0.7</twitter4j.version>
     <wutsi-channel-sdk.version>1.0.0</wutsi-channel-sdk.version>
+    <wutsi-post-sdk.version>1.0.0</wutsi-post-sdk.version>
     <wutsi-stream-rabbitmq.version>1.0.0</wutsi-stream-rabbitmq.version>
     <wutsi-site-sdk.version>1.1.0</wutsi-site-sdk.version>
     <wutsi-story-sdk.version>0.0.6</wutsi-story-sdk.version>
@@ -49,6 +50,11 @@
       <groupId>com.wutsi.channel</groupId>
       <artifactId>channel-sdk-kotlin</artifactId>
       <version>${wutsi-channel-sdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.wutsi.post</groupId>
+      <artifactId>post-sdk-kotlin</artifactId>
+      <version>${wutsi-post-sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>com.wutsi.site</groupId>
@@ -184,6 +190,10 @@
       <url>https://maven.pkg.github.com/wutsi/wutsi-stream-rabbitmq</url>
     </repository>
 
+    <repository>
+      <id>wutsi-post-sdk-kotlin</id>
+      <url>https://maven.pkg.github.com/wutsi/post-sdk-kotlin</url>
+    </repository>
     <repository>
       <id>wutsi-site-sdk-kotlin</id>
       <url>https://maven.pkg.github.com/wutsi/site-sdk-kotlin</url>

@@ -3,6 +3,9 @@ package com.wutsi.twitter.event
 import com.wutsi.channel.event.ChannelEventType
 import com.wutsi.channel.event.ChannelSecretRevokedEventPayload
 import com.wutsi.channel.event.ChannelSecretSubmittedEventPayload
+import com.wutsi.post.PostApi
+import com.wutsi.post.event.PostEventPayload
+import com.wutsi.post.event.PostEventType
 import com.wutsi.story.event.StoryEventPayload
 import com.wutsi.story.event.StoryEventType
 import com.wutsi.stream.Event
@@ -20,7 +23,8 @@ import org.springframework.stereotype.Service
 class EventHandler(
     @Autowired private val shareDelegate: ShareDelegate,
     @Autowired private val storeSecretDelegate: StoreSecretDelegate,
-    @Autowired private val revokeSecretDelegate: RevokeSecretDelegate
+    @Autowired private val revokeSecretDelegate: RevokeSecretDelegate,
+    @Autowired private val postApi: PostApi
 ) {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(EventHandler::class.java)
@@ -31,29 +35,58 @@ class EventHandler(
         LOGGER.info("onEvent($event)")
 
         if (event.type == StoryEventType.PUBLISHED.urn) {
-            val payload = ObjectMapperBuilder().build().readValue(event.payload, StoryEventPayload::class.java)
-            shareDelegate.invoke(payload.storyId)
+            onStoryPublished(event)
         } else if (event.type == ChannelEventType.SECRET_SUBMITTED.urn) {
-            val payload = ObjectMapperBuilder().build().readValue(event.payload, ChannelSecretSubmittedEventPayload::class.java)
-            if (payload.type == "twitter") {
-                storeSecretDelegate.invoke(
-                    request = StoreSecretRequest(
-                        userId = payload.userId,
-                        siteId = payload.siteId,
-                        twitterId = payload.twitterId,
-                        accessToken = payload.accessToken,
-                        accessTokenSecret = payload.accessTokenSecret
-                    )
-                )
-            }
+            onSecretSubmitted(event)
         } else if (event.type == ChannelEventType.SECRET_REVOKED.urn) {
-            val payload = ObjectMapperBuilder().build().readValue(event.payload, ChannelSecretRevokedEventPayload::class.java)
-            if (payload.type == "twitter") {
-                revokeSecretDelegate.invoke(
+            onSecretRevoked(event)
+        } else if (event.type == PostEventType.SUBMITTED.urn) {
+            onPostSubmitted(event)
+        }
+    }
+
+    private fun onStoryPublished(event: Event) {
+        val payload = ObjectMapperBuilder().build().readValue(event.payload, StoryEventPayload::class.java)
+        shareDelegate.invoke(payload.storyId)
+    }
+
+    private fun onSecretSubmitted(event: Event) {
+        val payload = ObjectMapperBuilder().build().readValue(event.payload, ChannelSecretSubmittedEventPayload::class.java)
+        if (payload.type == "twitter") {
+            storeSecretDelegate.invoke(
+                request = StoreSecretRequest(
                     userId = payload.userId,
-                    siteId = payload.siteId
+                    siteId = payload.siteId,
+                    twitterId = payload.twitterId,
+                    accessToken = payload.accessToken,
+                    accessTokenSecret = payload.accessTokenSecret
                 )
-            }
+            )
+        }
+    }
+
+    private fun onSecretRevoked(event: Event) {
+        val payload = ObjectMapperBuilder().build().readValue(event.payload, ChannelSecretRevokedEventPayload::class.java)
+        if (payload.type == "twitter") {
+            revokeSecretDelegate.invoke(
+                userId = payload.userId,
+                siteId = payload.siteId
+            )
+        }
+    }
+
+    private fun onPostSubmitted(event: Event) {
+        val payload = ObjectMapperBuilder().build().readValue(event.payload, PostEventPayload::class.java)
+        val response = postApi.get(payload.postId)
+        val post = response.post
+        if (post.channelType == "twitter") {
+            shareDelegate.invoke(
+                storyId = post.storyId,
+                message = post.message,
+                pictureUrl = post.pictureUrl,
+                includeLink = post.includeLink,
+                postId = post.id
+            )
         }
     }
 }
