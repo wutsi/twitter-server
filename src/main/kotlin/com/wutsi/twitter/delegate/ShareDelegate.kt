@@ -39,7 +39,9 @@ public class ShareDelegate(
             return
 
         val secret = findSecret(story, site) ?: return
-        tweet(story, secret, site)
+        val status = tweet(story, secret, site)
+        if (status != null)
+            retweet(status, secret, site)
     }
 
     private fun findSecret(story: Story, site: Site): SecretEntity? {
@@ -57,15 +59,31 @@ public class ShareDelegate(
             null
     }
 
-    private fun tweet(story: Story, secret: SecretEntity, site: Site) {
+    private fun tweet(story: Story, secret: SecretEntity, site: Site): Status? {
         try {
             val status = share(story, secret, site)
-            if (status != null) {
+            if (status != null)
                 save(story, site, secret, status)
-            }
+
+            return status
         } catch (ex: TwitterException) {
             LOGGER.error("Unable to share the story", ex)
             save(story, site, secret, ex)
+            return null
+        }
+    }
+
+    private fun retweet(status: Status, secret: SecretEntity, site: Site) {
+        val userId = userId(site)
+        if (userId == null || userId == secret.userId)
+            return
+
+        val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site) ?: return
+        LOGGER.info("Retweeting ${status.id}")
+        try {
+            twitter.retweetStatus(status.id)
+        } catch (ex: TwitterException) {
+            LOGGER.warn("Unexpected error while retweeting ${status.id}")
         }
     }
 

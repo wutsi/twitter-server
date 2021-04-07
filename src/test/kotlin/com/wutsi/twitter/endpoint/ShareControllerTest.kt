@@ -77,7 +77,7 @@ internal class ShareControllerTest {
 
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
-    fun `save message to DB when sharing story-id`() {
+    fun `save message to DB when sharing story`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
 
@@ -100,7 +100,7 @@ internal class ShareControllerTest {
 
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
-    fun `save error to DB when sharing story-id`() {
+    fun `save error to DB when sharing story fails`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
 
@@ -124,7 +124,7 @@ internal class ShareControllerTest {
     }
 
     @Test
-    fun `send message to Twitter when story is sent with socialMediaMessage`() {
+    fun `tweet when story sharing story with socialMediaMessage`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
 
@@ -137,7 +137,7 @@ internal class ShareControllerTest {
     }
 
     @Test
-    fun `send message to Twitter when story is sent without socialMediaMessage`() {
+    fun `tweet when story sharing story  without socialMediaMessage`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
 
@@ -151,7 +151,7 @@ internal class ShareControllerTest {
 
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
-    fun `send message to Twitter using primary account - author has no twitter secret`() {
+    fun `tweet using primary account when sharing a story having author with no twitter secret`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
 
@@ -171,7 +171,7 @@ internal class ShareControllerTest {
 
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
-    fun `do not send message to Twitter when no primary account set - author has no twitter secret`() {
+    fun `do not tweet when sharing a story having author with no twitter secret - no primary user set`() {
         val site = createSite(
             attributes = listOf(
                 Attribute(AttributeUrn.ENABLED.urn, "true"),
@@ -193,7 +193,7 @@ internal class ShareControllerTest {
     }
 
     @Test
-    fun `do not send message to Twitter when not enabled`() {
+    fun `do not tweet when flag not enabled`() {
         val site = createSite(
             attributes = listOf(
                 Attribute(AttributeUrn.CLIENT_SECRET.urn, "client-secret"),
@@ -211,7 +211,7 @@ internal class ShareControllerTest {
     }
 
     @Test
-    fun `do not send message to Twitter not available`() {
+    fun `do not tween when twitter instance not available`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
 
@@ -223,6 +223,38 @@ internal class ShareControllerTest {
         rest.getForEntity(url, Any::class.java, "123")
 
         verify(twitter, never()).updateStatus(anyString())
+    }
+
+    @Test
+    fun `retweet when sharing a story from a non-primary user`() {
+        val site = createSite()
+        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+
+        val story = createStory()
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        val status = createStatus(11L, 111L)
+        doReturn(status).whenever(twitter).updateStatus(anyString())
+
+        rest.getForEntity(url, Any::class.java, "123")
+
+        verify(twitter).retweetStatus(11L)
+    }
+
+    @Test
+    fun `do not retweet when sharing a story from primary user`() {
+        val site = createSite()
+        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+
+        val story = createStory(userId = 666L)
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        val status = createStatus(11L, 111L)
+        doReturn(status).whenever(twitter).updateStatus(anyString())
+
+        rest.getForEntity(url, Any::class.java, "123")
+
+        verify(twitter, never()).retweetStatus(any())
     }
 
     private fun createStory(
