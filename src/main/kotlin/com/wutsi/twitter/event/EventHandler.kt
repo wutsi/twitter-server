@@ -28,6 +28,7 @@ class EventHandler(
 ) {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(EventHandler::class.java)
+        private val CHANNEL_TYPE = "twitter"
     }
 
     @EventListener
@@ -52,12 +53,12 @@ class EventHandler(
 
     private fun onSecretSubmitted(event: Event) {
         val payload = ObjectMapperBuilder().build().readValue(event.payload, ChannelSecretSubmittedEventPayload::class.java)
-        if (payload.type == "twitter") {
+        if (payload.type == CHANNEL_TYPE) {
             storeSecretDelegate.invoke(
                 request = StoreSecretRequest(
                     userId = payload.userId,
                     siteId = payload.siteId,
-                    twitterId = payload.twitterId,
+                    twitterId = payload.channelUserId.toLong(),
                     accessToken = payload.accessToken,
                     accessTokenSecret = payload.accessTokenSecret
                 )
@@ -79,7 +80,7 @@ class EventHandler(
         val payload = ObjectMapperBuilder().build().readValue(event.payload, PostEventPayload::class.java)
         val response = postApi.get(payload.postId)
         val post = response.post
-        if (post.channelType == "twitter") {
+        if (post.channelType == CHANNEL_TYPE) {
             shareDelegate.invoke(
                 storyId = post.storyId,
                 message = post.message,

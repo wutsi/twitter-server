@@ -37,7 +37,7 @@
     <postgresql.version>42.2.19</postgresql.version>
     <flyway.version>7.7.0</flyway.version>
     <twitter4j.version>4.0.7</twitter4j.version>
-    <wutsi-channel-sdk.version>1.0.0</wutsi-channel-sdk.version>
+    <wutsi-channel-sdk.version>1.1.0</wutsi-channel-sdk.version>
     <wutsi-post-sdk.version>1.0.0</wutsi-post-sdk.version>
     <wutsi-stream-rabbitmq.version>1.0.0</wutsi-stream-rabbitmq.version>
     <wutsi-site-sdk.version>1.1.0</wutsi-site-sdk.version>

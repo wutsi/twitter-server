@@ -70,7 +70,7 @@ internal class EventHandlerTest {
                     {
                         "userId": 11,
                         "siteId": 1,
-                        "twitterId": 4409403,
+                        "channelUserId": "4409403",
                         "accessToken": "token",
                         "accessTokenSecret": "secret",
                         "type": "twitter"
