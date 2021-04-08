@@ -57,7 +57,7 @@ internal class StoreSecretControllerTest {
             userId = 1L,
             accessTokenSecret = "secret",
             accessToken = "token",
-            twitterId = 111L
+            twitterId = 222L
         )
         val response = rest.postForEntity(url, request, StoreSecretResponse::class.java)
         assertEquals(OK, response.statusCode)
@@ -65,6 +65,7 @@ internal class StoreSecretControllerTest {
         val secret = dao.findById(response.body.secretId).get()
         assertEquals(request.userId, secret.userId)
         assertEquals(request.siteId, secret.siteId)
+        assertEquals(request.twitterId, secret.twitterId)
         assertEquals(request.accessToken, secret.accessToken)
         assertEquals(secret.accessTokenSecret, secret.accessTokenSecret)
     }

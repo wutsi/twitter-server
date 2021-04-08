@@ -43,6 +43,7 @@ public class StoreSecretDelegate(
 
     private fun update(secret: SecretEntity, request: StoreSecretRequest): SecretEntity {
         LOGGER.info("Updating secret for User#${request.userId} on Site#${request.siteId}")
+        secret.twitterId = request.twitterId
         secret.accessToken = request.accessToken
         secret.accessTokenSecret = request.accessTokenSecret
         secret.modificationDateTime = OffsetDateTime.now()

@@ -22,7 +22,7 @@ data class SecretEntity(
     val userId: Long = -1,
 
     @Column(name = "twitter_id")
-    val twitterId: Long = -1,
+    var twitterId: Long = -1,
 
     @Column(name = "access_token")
     var accessToken: String = "",
