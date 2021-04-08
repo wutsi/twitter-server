@@ -89,21 +89,22 @@ public class ShareDelegate(
         postId: Long?
     ): Status? {
         var status: Status? = null
+
         try {
             status = tweet(story, secret, site, message, pictureUrl, includeLink)
             if (status != null) {
                 retweet(status, secret, site)
             }
-            return status
         } catch (ex: Exception) {
             LOGGER.error("Unable to share the story", ex)
             save(story, site, secret, ex, postId)
-            return null
         } finally {
             if (status != null) {
                 save(story, site, secret, status, postId)
             }
         }
+
+        return status
     }
 
     private fun tweet(
