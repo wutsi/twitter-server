@@ -47,7 +47,7 @@ public class ShareDelegate(
         postId: Long? = null
     ) {
         val story = storyApi.get(storyId).story
-        val site = siteApi.get(1).site
+        val site = siteApi.get(story.siteId).site
         if (!enabled(site))
             return
 
