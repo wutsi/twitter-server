@@ -43,6 +43,8 @@ class EventHandler(
             onSecretRevoked(event)
         } else if (event.type == PostEventType.SUBMITTED.urn) {
             onPostSubmitted(event)
+        } else {
+            LOGGER.info("Event ignored")
         }
     }
 
@@ -63,6 +65,8 @@ class EventHandler(
                     accessTokenSecret = payload.accessTokenSecret
                 )
             )
+        } else {
+            LOGGER.info("Event ignored")
         }
     }
 
@@ -88,6 +92,8 @@ class EventHandler(
                 includeLink = post.includeLink,
                 postId = post.id
             )
+        } else {
+            LOGGER.info("Event ignored")
         }
     }
 }
