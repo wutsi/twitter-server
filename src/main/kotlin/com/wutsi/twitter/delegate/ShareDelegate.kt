@@ -12,7 +12,7 @@ import com.wutsi.twitter.entity.SecretEntity
 import com.wutsi.twitter.entity.ShareEntity
 import com.wutsi.twitter.event.TwitterEventType
 import com.wutsi.twitter.event.TwitterSharedEventPayload
-import com.wutsi.twitter.service.bitly.BitlyUrlShortener
+import com.wutsi.twitter.service.bitly.BitlyUrlShortenerFactory
 import com.wutsi.twitter.service.twitter.TwitterProvider
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,7 +30,7 @@ public class ShareDelegate(
     @Autowired private val storyApi: StoryApi,
     @Autowired private val shareDao: ShareRepository,
     @Autowired private val secretDao: SecretRepository,
-    @Autowired private val bitly: BitlyUrlShortener,
+    @Autowired private val bitly: BitlyUrlShortenerFactory,
     @Autowired private val twitterProvider: TwitterProvider,
     @Autowired private val eventStream: EventStream
 ) {
@@ -217,12 +217,15 @@ public class ShareDelegate(
             story.title
 
         val url = if (includeLink)
-            bitly.shorten("${site.websiteUrl}${story.slug}?utm_source=twitter", site)
+            url(story, site)
         else
             ""
 
         return "$text $url".trim()
     }
+
+    private fun url(story: Story, site: Site): String =
+        bitly.get(site).shorten("${site.websiteUrl}${story.slug}?utm_source=twitter")
 
     private fun enabled(site: Site): Boolean =
         site.attributes.find { AttributeUrn.ENABLED.urn == it.urn }?.value == "true"

@@ -33,6 +33,11 @@ Wutsi Plugin for sharing stories on [Twitter](https://www.twitter.com).
         <servers>
             ...
             <server>
+              <id>wutsi-bitly</id>
+              <username>${env.GITUB_USER}</username>
+              <password>${env.GITHUB_TOKEN}</password>
+            </server>
+            <server>
               <id>wutsi-channel-sdk-kotlin</id>
               <username>${env.GITUB_USER}</username>
               <password>${env.GITHUB_TOKEN}</password>

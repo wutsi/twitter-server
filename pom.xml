@@ -24,7 +24,6 @@
     <jacoco-maven-plugin.version>0.8.2</jacoco-maven-plugin.version>
     <jdk.version>11</jdk.version>
 
-    <bitly-api-client.version>0.8.0</bitly-api-client.version>
     <javax-validation.version>2.0.1.Final</javax-validation.version>
     <junit.version>5.6.0</junit.version>
     <kotlin.version>1.4.31</kotlin.version>
@@ -37,6 +36,7 @@
     <postgresql.version>42.2.19</postgresql.version>
     <flyway.version>7.7.0</flyway.version>
     <twitter4j.version>4.0.7</twitter4j.version>
+    <wutsi-bitly.version>1.0.0</wutsi-bitly.version>
     <wutsi-channel-sdk.version>1.1.0</wutsi-channel-sdk.version>
     <wutsi-post-sdk.version>1.0.0</wutsi-post-sdk.version>
     <wutsi-stream-rabbitmq.version>1.0.0</wutsi-stream-rabbitmq.version>
@@ -46,6 +46,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>com.wutsi.bitly</groupId>
+      <artifactId>wutsi-bitly</artifactId>
+      <version>${wutsi-bitly.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.wutsi.channel</groupId>
       <artifactId>channel-sdk-kotlin</artifactId>
@@ -70,11 +75,6 @@
       <groupId>com.wutsi.twitter</groupId>
       <artifactId>twitter-sdk-kotlin</artifactId>
       <version>${wutsi-twitter-sdk.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.swisstech</groupId>
-      <artifactId>bitly-api-client</artifactId>
-      <version>${bitly-api-client.version}</version>
     </dependency>
     <dependency>
       <groupId>org.twitter4j</groupId>
@@ -190,6 +190,10 @@
       <url>https://maven.pkg.github.com/wutsi/wutsi-stream-rabbitmq</url>
     </repository>
 
+    <repository>
+      <id>wutsi-bitly</id>
+      <url>https://maven.pkg.github.com/wutsi/wutsi-bitly</url>
+    </repository>
     <repository>
       <id>wutsi-post-sdk-kotlin</id>
       <url>https://maven.pkg.github.com/wutsi/post-sdk-kotlin</url>

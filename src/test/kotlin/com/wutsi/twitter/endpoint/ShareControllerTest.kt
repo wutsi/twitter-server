@@ -9,6 +9,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
+import com.wutsi.bitly.BitlyUrlShortener
 import com.wutsi.site.SiteApi
 import com.wutsi.site.dto.Attribute
 import com.wutsi.site.dto.GetSiteResponse
@@ -21,7 +22,7 @@ import com.wutsi.twitter.AttributeUrn
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.event.TwitterEventType
 import com.wutsi.twitter.event.TwitterSharedEventPayload
-import com.wutsi.twitter.service.bitly.BitlyUrlShortener
+import com.wutsi.twitter.service.bitly.BitlyUrlShortenerFactory
 import com.wutsi.twitter.service.twitter.TwitterProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -66,7 +67,7 @@ internal class ShareControllerTest {
     private lateinit var twitter: Twitter
 
     @MockBean
-    private lateinit var bitly: BitlyUrlShortener
+    private lateinit var bitlyFactory: BitlyUrlShortenerFactory
 
     @MockBean
     private lateinit var eventStream: EventStream
@@ -77,7 +78,9 @@ internal class ShareControllerTest {
     fun setUp() {
         url = "http://127.0.0.1:$port/v1/twitter/share?story-id={story-id}"
 
-        doReturn(shortenUrl).whenever(bitly).shorten(any(), any())
+        val bitly = mock<BitlyUrlShortener>()
+        doReturn(shortenUrl).whenever(bitly).shorten(any())
+        doReturn(bitly).whenever(bitlyFactory).get(any())
 
         twitter = mock()
         doReturn(twitter).whenever(twitterProvider).getTwitter(any(), any(), any())
