@@ -8,7 +8,7 @@ servers:
   - url: 'https://wutsi-twitter-test.herokuapp.com'
     description: Sandbox
   - url: 'https://wutsi-twitter-prod.herokuapp.com'
-    description: Sandbox
+    description: Production
 paths:
   /v1/twitter/share:
     get:

@@ -1,14 +1,24 @@
-java -jar ../wutsi-codegen/target/wutsi-codegen-0.0.24.jar server \
-    -in https://wutsi-openapi.s3.amazonaws.com/twitter_api.yaml \
+#/bin/sh
+
+CODEGEN_VERSION="0.0.27"
+CODEGEN_JAR=~/wutsi-codegen/wutsi-codegen-${CODEGEN_VERSION}.jar
+
+API_NAME=twitter
+API_URL=https://wutsi-openapi.s3.amazonaws.com/${API_NAME}_api.yaml
+GITHUB_USER=wutsi
+
+echo "Generating code from ${API_URL}"
+java -jar ${CODEGEN_JAR} server \
+    -in ${API_URL} \
     -out . \
-    -name twitter \
-    -package com.wutsi.twitter \
+    -name ${API_NAME} \
+    -package com.wutsi.${API_NAME} \
     -jdk 11 \
-    -github_user wutsi \
-    -github_project twitter-server \
-    -heroku wutsi-twitter \
-    -service_database \
+    -github_user ${GITHUB_USER} \
+    -github_project ${API_NAME}-sdk-kotlin \
+    -heroku wutsi-${API_NAME} \
     -service_logger \
+    -service_database \
     -service_mqueue
 
 if [ $? -eq 0 ]

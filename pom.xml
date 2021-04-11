@@ -38,10 +38,11 @@
     <twitter4j.version>4.0.7</twitter4j.version>
     <wutsi-bitly.version>1.0.0</wutsi-bitly.version>
     <wutsi-channel-sdk.version>1.1.0</wutsi-channel-sdk.version>
-    <wutsi-post-sdk.version>1.0.0</wutsi-post-sdk.version>
+    <wutsi-post-sdk.version>1.1.0</wutsi-post-sdk.version>
     <wutsi-stream-rabbitmq.version>1.0.0</wutsi-stream-rabbitmq.version>
-    <wutsi-site-sdk.version>1.1.0</wutsi-site-sdk.version>
-    <wutsi-story-sdk.version>0.1.0</wutsi-story-sdk.version>
+    <wutsi-site-sdk.version>1.2.0</wutsi-site-sdk.version>
+    <wutsi-story-sdk.version>0.4.0</wutsi-story-sdk.version>
+    <wutsi-tracing.version>1.0.0</wutsi-tracing.version>
     <wutsi-twitter-sdk.version>1.4.0</wutsi-twitter-sdk.version>
   </properties>
 
@@ -50,6 +51,11 @@
       <groupId>com.wutsi.bitly</groupId>
       <artifactId>wutsi-bitly</artifactId>
       <version>${wutsi-bitly.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.wutsi.tracing</groupId>
+      <artifactId>wutsi-tracing</artifactId>
+      <version>${wutsi-tracing.version}</version>
     </dependency>
     <dependency>
       <groupId>com.wutsi.channel</groupId>
@@ -209,6 +215,10 @@
     <repository>
       <id>wutsi-twitter-sdk-kotlin</id>
       <url>https://maven.pkg.github.com/wutsi/twitter-sdk-kotlin</url>
+    </repository>
+    <repository>
+      <id>wutsi-tracing</id>
+      <url>https://maven.pkg.github.com/wutsi/wutsi-tracing</url>
     </repository>
   </repositories>
 
