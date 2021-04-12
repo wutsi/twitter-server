@@ -1,11 +1,10 @@
 [![](https://github.com/wutsi/twitter-server/actions/workflows/master.yml/badge.svg)](https://github.com/wutsi/twitter-server/actions/workflows/master.yml)
-[![](https://github.com/wutsi/twitter-server/actions/workflows/scheduled_run.yml/badge.svg)](https://github.com/wutsi/twitter-server/actions/workflows/scheduled_run.yml)
 
 [![JDK](https://img.shields.io/badge/jdk-11-brightgreen.svg)](https://jdk.java.net/11/)
 [![](https://img.shields.io/badge/maven-3.6-brightgreen.svg)](https://maven.apache.org/download.cgi)
 ![](https://img.shields.io/badge/language-kotlin-blue.svg)
 
-Wutsi Plugin for sharing stories on [Twitter](https://www.twitter.com).
+API for sharing stories on Twitter.&#10;
 
 # Installation Prerequisites
 ## Database Setup
@@ -33,38 +32,8 @@ Wutsi Plugin for sharing stories on [Twitter](https://www.twitter.com).
         <servers>
             ...
             <server>
-              <id>wutsi-bitly</id>
-              <username>${env.GITUB_USER}</username>
-              <password>${env.GITHUB_TOKEN}</password>
-            </server>
-            <server>
-              <id>wutsi-tracing</id>
-              <username>${env.GITUB_USER}</username>
-              <password>${env.GITHUB_TOKEN}</password>
-            </server>
-            <server>
-              <id>wutsi-channel-sdk-kotlin</id>
-              <username>${env.GITUB_USER}</username>
-              <password>${env.GITHUB_TOKEN}</password>
-            </server>
-            <server>
-              <id>wutsi-site-sdk-kotlin</id>
-              <username>${env.GITUB_USER}</username>
-              <password>${env.GITHUB_TOKEN}</password>
-            </server>
-            <server>
-              <id>wutsi-story-sdk-kotlin</id>
-              <username>${env.GITUB_USER}</username>
-              <password>${env.GITHUB_TOKEN}</password>
-            </server>
-            <server>
-              <id>wutsi-twitter-sdk-kotlin</id>
-              <username>${env.GITUB_USER}</username>
-              <password>${env.GITHUB_TOKEN}</password>
-            </server>
-            <server>
-              <id>wutsi-stream-rabbitmq</id>
-              <username>${env.GITUB_USER}</username>
+              <id>github</id>
+              <username>${env.GITHUB_USER}</username>
               <password>${env.GITHUB_TOKEN}</password>
             </server>
         </servers>
@@ -92,4 +61,4 @@ That's it... the API is up and running! Start sending requests :-)
 
 # Links
 - [API](https://wutsi.github.io/twitter-server/api/)
-- [Documentation](docs)
+- [Documentation](docs/)
