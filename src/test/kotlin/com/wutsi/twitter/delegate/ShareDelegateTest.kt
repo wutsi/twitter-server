@@ -15,10 +15,10 @@ import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.GetStoryResponse
 import com.wutsi.story.dto.Story
 import com.wutsi.stream.EventStream
-import com.wutsi.twitter.AttributeUrn.CLIENT_ID
-import com.wutsi.twitter.AttributeUrn.CLIENT_SECRET
-import com.wutsi.twitter.AttributeUrn.ENABLED
-import com.wutsi.twitter.AttributeUrn.USER_ID
+import com.wutsi.twitter.SiteAttribute.CLIENT_ID
+import com.wutsi.twitter.SiteAttribute.CLIENT_SECRET
+import com.wutsi.twitter.SiteAttribute.ENABLED
+import com.wutsi.twitter.SiteAttribute.USER_ID
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.service.bitly.BitlyUrlShortenerFactory
 import com.wutsi.twitter.service.twitter.TwitterProvider

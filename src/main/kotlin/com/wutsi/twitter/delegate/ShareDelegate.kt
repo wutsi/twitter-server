@@ -5,7 +5,7 @@ import com.wutsi.site.dto.Site
 import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.Story
 import com.wutsi.stream.EventStream
-import com.wutsi.twitter.AttributeUrn
+import com.wutsi.twitter.SiteAttribute
 import com.wutsi.twitter.dao.SecretRepository
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.entity.SecretEntity
@@ -228,11 +228,11 @@ public class ShareDelegate(
         bitly.get(site).shorten("${site.websiteUrl}${story.slug}?utm_source=twitter")
 
     private fun enabled(site: Site): Boolean =
-        site.attributes.find { AttributeUrn.ENABLED.urn == it.urn }?.value == "true"
+        site.attributes.find { SiteAttribute.ENABLED.urn == it.urn }?.value == "true"
 
     private fun userId(site: Site): Long? {
         try {
-            return site.attributes.find { AttributeUrn.USER_ID.urn == it.urn }?.value?.toLong()
+            return site.attributes.find { SiteAttribute.USER_ID.urn == it.urn }?.value?.toLong()
         } catch (ex: Exception) {
             return null
         }

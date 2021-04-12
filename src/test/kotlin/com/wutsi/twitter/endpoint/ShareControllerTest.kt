@@ -18,7 +18,7 @@ import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.GetStoryResponse
 import com.wutsi.story.dto.Story
 import com.wutsi.stream.EventStream
-import com.wutsi.twitter.AttributeUrn
+import com.wutsi.twitter.SiteAttribute
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.event.TwitterEventType
 import com.wutsi.twitter.event.TwitterSharedEventPayload
@@ -185,9 +185,9 @@ internal class ShareControllerTest {
     fun `do not tweet when sharing a story having author with no twitter secret - no primary user set`() {
         val site = createSite(
             attributes = listOf(
-                Attribute(AttributeUrn.ENABLED.urn, "true"),
-                Attribute(AttributeUrn.CLIENT_SECRET.urn, "client-secret"),
-                Attribute(AttributeUrn.CLIENT_ID.urn, "client-id")
+                Attribute(SiteAttribute.ENABLED.urn, "true"),
+                Attribute(SiteAttribute.CLIENT_SECRET.urn, "client-secret"),
+                Attribute(SiteAttribute.CLIENT_ID.urn, "client-id")
             )
         )
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
@@ -207,8 +207,8 @@ internal class ShareControllerTest {
     fun `do not tweet when flag not enabled`() {
         val site = createSite(
             attributes = listOf(
-                Attribute(AttributeUrn.CLIENT_SECRET.urn, "client-secret"),
-                Attribute(AttributeUrn.CLIENT_ID.urn, "client-id"),
+                Attribute(SiteAttribute.CLIENT_SECRET.urn, "client-secret"),
+                Attribute(SiteAttribute.CLIENT_ID.urn, "client-id"),
             )
         )
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
@@ -300,10 +300,10 @@ internal class ShareControllerTest {
 
     private fun createSite(
         attributes: List<Attribute> = listOf(
-            Attribute(AttributeUrn.ENABLED.urn, "true"),
-            Attribute(AttributeUrn.CLIENT_SECRET.urn, "client-secret"),
-            Attribute(AttributeUrn.CLIENT_ID.urn, "client-id"),
-            Attribute(AttributeUrn.USER_ID.urn, "666")
+            Attribute(SiteAttribute.ENABLED.urn, "true"),
+            Attribute(SiteAttribute.CLIENT_SECRET.urn, "client-secret"),
+            Attribute(SiteAttribute.CLIENT_ID.urn, "client-id"),
+            Attribute(SiteAttribute.USER_ID.urn, "666")
         )
     ) = Site(
         id = 1L,

@@ -4,7 +4,7 @@ import com.wutsi.bitly.BitlyUrlShortener
 import com.wutsi.bitly.DefaultBitlyUrlShortener
 import com.wutsi.bitly.NullBitlyUrlShortener
 import com.wutsi.site.dto.Site
-import com.wutsi.twitter.AttributeUrn
+import com.wutsi.twitter.SiteAttribute
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,5 +18,5 @@ class BitlyUrlShortenerFactory {
     }
 
     private fun accessToken(site: Site): String? =
-        site.attributes.find { it.urn == AttributeUrn.BITLY_ACCESS_TOKEN.urn }?.value
+        site.attributes.find { it.urn == SiteAttribute.BITLY_ACCESS_TOKEN.urn }?.value
 }

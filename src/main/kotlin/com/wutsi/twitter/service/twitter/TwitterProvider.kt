@@ -1,7 +1,7 @@
 package com.wutsi.twitter.service.twitter
 
 import com.wutsi.site.dto.Site
-import com.wutsi.twitter.AttributeUrn
+import com.wutsi.twitter.SiteAttribute
 import org.springframework.stereotype.Service
 import twitter4j.Twitter
 import twitter4j.TwitterFactory
@@ -26,8 +26,8 @@ class TwitterProvider {
     }
 
     private fun clientId(site: Site): String? =
-        site.attributes.find { AttributeUrn.CLIENT_ID.urn == it.urn }?.value
+        site.attributes.find { SiteAttribute.CLIENT_ID.urn == it.urn }?.value
 
     private fun clientSecret(site: Site): String? =
-        site.attributes.find { AttributeUrn.CLIENT_SECRET.urn == it.urn }?.value
+        site.attributes.find { SiteAttribute.CLIENT_SECRET.urn == it.urn }?.value
 }
