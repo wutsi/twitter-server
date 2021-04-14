@@ -79,11 +79,11 @@ public class ShareDelegate(
             return null
         }
         opt = secretDao.findByUserIdAndSiteId(userId, site.id)
-        return if (opt.isPresent)
-            opt.get()
-        else {
+        if (opt.isPresent) {
+            return opt.get()
+        } else {
             LOGGER.warn("Primary user doesn't have Twitter secrets configured")
-            null
+            return null
         }
     }
 
