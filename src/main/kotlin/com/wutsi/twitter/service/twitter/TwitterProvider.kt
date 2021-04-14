@@ -2,6 +2,7 @@ package com.wutsi.twitter.service.twitter
 
 import com.wutsi.site.dto.Site
 import com.wutsi.twitter.SiteAttribute
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import twitter4j.Twitter
 import twitter4j.TwitterFactory
@@ -9,11 +10,17 @@ import twitter4j.conf.ConfigurationBuilder
 
 @Service
 class TwitterProvider {
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(TwitterProvider::class.java)
+    }
+
     fun getTwitter(accessToken: String, accessTokenSecret: String, site: Site): Twitter? {
         val clientId = clientId(site)
         val clientSecret = clientSecret(site)
-        if (clientId == null || clientSecret == null)
+        if (clientId == null || clientSecret == null) {
+            LOGGER.warn("Twitter clientId or clientSecret not configured. No Twitter connectivity available")
             return null
+        }
 
         val cf = ConfigurationBuilder()
         cf

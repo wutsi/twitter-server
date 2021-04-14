@@ -73,12 +73,18 @@ public class ShareDelegate(
             return opt.get()
 
         // Author doesn't have twitter account, return the primary user
-        val userId = userId(site) ?: return null
+        val userId = userId(site)
+        if (userId == null) {
+            LOGGER.info("User#${story.userId} doesn't have Twitter secrets. No primary account configured either")
+            return null
+        }
         opt = secretDao.findByUserIdAndSiteId(userId, site.id)
         return if (opt.isPresent)
             opt.get()
-        else
+        else {
+            LOGGER.info("Primary user doesn't have Twitter secrets configured")
             null
+        }
     }
 
     private fun share(
@@ -117,11 +123,7 @@ public class ShareDelegate(
         pictureUrl: String?,
         includeLink: Boolean
     ): Status? {
-        val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site)
-        if (twitter == null) {
-            LOGGER.info("User#${secret.userId} doesn't have connectivity setup with Twitter. Message not tweeted")
-            return null
-        }
+        val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site) ?: return null
 
         val text = text(story, site, message, includeLink)
         if (pictureUrl.isNullOrEmpty()) {
