@@ -49,7 +49,7 @@ public class ShareDelegate(
         val story = storyApi.get(storyId).story
         val site = siteApi.get(story.siteId).site
         if (!enabled(site)) {
-            LOGGER.info("Site#${story.siteId} doesn't have Twitter enabled. Ignoring the request")
+            LOGGER.warn("Site#${story.siteId} doesn't have Twitter enabled. Ignoring the request")
             return
         }
 
@@ -75,14 +75,14 @@ public class ShareDelegate(
         // Author doesn't have twitter account, return the primary user
         val userId = userId(site)
         if (userId == null) {
-            LOGGER.info("User#${story.userId} doesn't have Twitter secrets. No primary account configured either")
+            LOGGER.warn("User#${story.userId} doesn't have Twitter secrets. No primary account configured either")
             return null
         }
         opt = secretDao.findByUserIdAndSiteId(userId, site.id)
         return if (opt.isPresent)
             opt.get()
         else {
-            LOGGER.info("Primary user doesn't have Twitter secrets configured")
+            LOGGER.warn("Primary user doesn't have Twitter secrets configured")
             null
         }
     }
