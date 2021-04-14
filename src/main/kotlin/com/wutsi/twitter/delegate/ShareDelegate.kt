@@ -117,7 +117,11 @@ public class ShareDelegate(
         pictureUrl: String?,
         includeLink: Boolean
     ): Status? {
-        val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site) ?: return null
+        val twitter = twitterProvider.getTwitter(secret.accessToken, secret.accessTokenSecret, site)
+        if (twitter == null) {
+            LOGGER.info("User#${secret.userId} doesn't have connectivity setup with Twitter. Message not tweeted")
+            return null
+        }
 
         val text = text(story, site, message, includeLink)
         if (pictureUrl.isNullOrEmpty()) {
