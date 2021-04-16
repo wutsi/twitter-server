@@ -24,6 +24,8 @@ import com.wutsi.twitter.event.TwitterEventType
 import com.wutsi.twitter.event.TwitterSharedEventPayload
 import com.wutsi.twitter.service.bitly.BitlyUrlShortenerFactory
 import com.wutsi.twitter.service.twitter.TwitterProvider
+import com.wutsi.user.UserApi
+import com.wutsi.user.dto.GetUserResponse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -72,6 +74,9 @@ internal class ShareControllerTest {
     @MockBean
     private lateinit var eventStream: EventStream
 
+    @MockBean
+    private lateinit var userApi: UserApi
+
     private val shortenUrl = "https://bit.ly/123"
 
     @BeforeEach
@@ -84,6 +89,9 @@ internal class ShareControllerTest {
 
         twitter = mock()
         doReturn(twitter).whenever(twitterProvider).getTwitter(any(), any(), any())
+
+        val user = createUser()
+        doReturn(GetUserResponse(user)).whenever(userApi).get(any())
     }
 
     @Test
@@ -182,6 +190,24 @@ internal class ShareControllerTest {
 
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
+    fun `do not tweet tweet using primary account when sharing a story having test-account with no twitter secret`() {
+        val site = createSite()
+        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+
+        val user = createUser(id = 999, testUser = true)
+        doReturn(GetUserResponse(user)).whenever(userApi).get(999)
+
+        val story = createStory(socialMediaMessage = null, userId = 999)
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        rest.getForEntity(url, Any::class.java, "123")
+
+        verify(twitter, never()).updateStatus("${story.title} https://bit.ly/123")
+        assertTrue(dao.findAll().toList().isEmpty())
+    }
+
+    @Test
+    @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
     fun `do not tweet when sharing a story having author with no twitter secret - no primary user set`() {
         val site = createSite(
             attributes = listOf(
@@ -269,6 +295,25 @@ internal class ShareControllerTest {
     }
 
     @Test
+    fun `do not retweet when sharing a story from test user`() {
+        val site = createSite()
+        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+
+        val user = createUser(id = 2, testUser = true)
+        doReturn(GetUserResponse(user)).whenever(userApi).get(2)
+
+        val story = createStory(userId = 2)
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        val status = createStatus(11L, 111L)
+        doReturn(status).whenever(twitter).updateStatus(anyString())
+
+        rest.getForEntity(url, Any::class.java, "123")
+
+        verify(twitter, never()).retweetStatus(any())
+    }
+
+    @Test
     fun `event send when sharing a story`() {
         val site = createSite()
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
@@ -322,4 +367,9 @@ internal class ShareControllerTest {
 
         return status
     }
+
+    private fun createUser(id: Long = 1, testUser: Boolean = false) = com.wutsi.user.dto.User(
+        id = id,
+        testUser = testUser
+    )
 }

@@ -14,6 +14,8 @@ import com.wutsi.twitter.event.TwitterEventType
 import com.wutsi.twitter.event.TwitterSharedEventPayload
 import com.wutsi.twitter.service.bitly.BitlyUrlShortenerFactory
 import com.wutsi.twitter.service.twitter.TwitterProvider
+import com.wutsi.user.UserApi
+import com.wutsi.user.dto.User
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -28,6 +30,7 @@ import javax.transaction.Transactional
 public class ShareDelegate(
     @Autowired private val siteApi: SiteApi,
     @Autowired private val storyApi: StoryApi,
+    @Autowired private val userApi: UserApi,
     @Autowired private val shareDao: ShareRepository,
     @Autowired private val secretDao: SecretRepository,
     @Autowired private val bitly: BitlyUrlShortenerFactory,
@@ -52,9 +55,10 @@ public class ShareDelegate(
             LOGGER.warn("Site#${story.siteId} doesn't have Twitter enabled. Ignoring the request")
             return
         }
+        val user = userApi.get(story.userId).user
 
-        val secret = findSecret(story, site) ?: return
-        val status = share(story, secret, site, message, pictureUrl, includeLink, postId)
+        val secret = findSecret(story, user, site) ?: return
+        val status = share(story, user, secret, site, message, pictureUrl, includeLink, postId)
         if (status != null) {
             eventStream.publish(
                 type = TwitterEventType.SHARED.urn,
@@ -66,11 +70,17 @@ public class ShareDelegate(
         }
     }
 
-    private fun findSecret(story: Story, site: Site): SecretEntity? {
+    private fun findSecret(story: Story, user: User, site: Site): SecretEntity? {
         // Find account of the author of the story
         var opt = secretDao.findByUserIdAndSiteId(story.userId, site.id)
         if (opt.isPresent)
             return opt.get()
+
+        // User is a test account
+        if (user.testUser) {
+            LOGGER.warn("User#${user.id} is a test account. Can't tweet the Story")
+            return null
+        }
 
         // Author doesn't have twitter account, return the primary user
         val userId = userId(site)
@@ -82,13 +92,14 @@ public class ShareDelegate(
         if (opt.isPresent) {
             return opt.get()
         } else {
-            LOGGER.warn("Primary user doesn't have Twitter secrets configured")
+            LOGGER.warn("Primary user doesn't have Twitter secrets configured. Can't tweet the Story")
             return null
         }
     }
 
     private fun share(
         story: Story,
+        user: User,
         secret: SecretEntity,
         site: Site,
         message: String?,
@@ -101,7 +112,7 @@ public class ShareDelegate(
         try {
             status = tweet(story, secret, site, message, pictureUrl, includeLink)
             if (status != null) {
-                retweet(status, secret, site)
+                retweet(status, user, secret, site)
             }
         } catch (ex: Exception) {
             LOGGER.error("Unable to share the story", ex)
@@ -143,19 +154,30 @@ public class ShareDelegate(
         }
     }
 
-    private fun retweet(status: Status, secret: SecretEntity, site: Site) {
+    private fun retweet(status: Status, user: User, secret: SecretEntity, site: Site) {
         try {
+            // Never retweet primary-user's Stories
             val userId = userId(site)
-            if (userId == null || userId == secret.userId)
+            if (userId == null || userId == secret.userId) {
+                LOGGER.info("User#${secret.userId} is the primary user. No need to retweet his own Story")
                 return
+            }
 
+            // Never retweet Stories from test account
+            if (user.testUser) {
+                LOGGER.info("User#${user.id} is a test account. Can't retweet the Story")
+                return
+            }
+
+            // Retweet
             val primarySecret = secretDao.findByUserIdAndSiteId(userId, site.id)
-            if (!primarySecret.isPresent)
-                return
-
-            val twitter = twitterProvider.getTwitter(primarySecret.get().accessToken, primarySecret.get().accessTokenSecret, site) ?: return
-            LOGGER.info("Retweeting ${status.id}")
-            twitter.retweetStatus(status.id)
+            if (!primarySecret.isPresent) {
+                LOGGER.warn("The primary account doesn't have Twitter secret. Can't retweet")
+            } else {
+                val twitter = twitterProvider.getTwitter(primarySecret.get().accessToken, primarySecret.get().accessTokenSecret, site) ?: return
+                LOGGER.info("Retweeting ${status.id}")
+                twitter.retweetStatus(status.id)
+            }
         } catch (ex: Exception) {
             LOGGER.warn("Unable to retweet ${status.id}", ex)
         }

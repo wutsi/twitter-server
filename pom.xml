@@ -44,6 +44,7 @@
     <wutsi-story-sdk.version>0.4.0</wutsi-story-sdk.version>
     <wutsi-tracing.version>1.2.0</wutsi-tracing.version>
     <wutsi-twitter-sdk.version>1.4.0</wutsi-twitter-sdk.version>
+    <wutsi-user-sdk.version>1.4.0</wutsi-user-sdk.version>
   </properties>
 
   <dependencies>
@@ -81,6 +82,11 @@
       <groupId>com.wutsi.twitter</groupId>
       <artifactId>twitter-sdk-kotlin</artifactId>
       <version>${wutsi-twitter-sdk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.wutsi.user</groupId>
+      <artifactId>user-sdk-kotlin</artifactId>
+      <version>${wutsi-user-sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>org.twitter4j</groupId>

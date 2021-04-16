@@ -22,6 +22,9 @@ import com.wutsi.twitter.SiteAttribute.USER_ID
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.service.bitly.BitlyUrlShortenerFactory
 import com.wutsi.twitter.service.twitter.TwitterProvider
+import com.wutsi.user.UserApi
+import com.wutsi.user.dto.GetUserResponse
+import com.wutsi.user.dto.User
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -36,7 +39,6 @@ import org.springframework.test.context.jdbc.Sql
 import twitter4j.Status
 import twitter4j.StatusUpdate
 import twitter4j.Twitter
-import twitter4j.User
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(value = ["/db/clean.sql", "/db/ShareDelegate.sql"])
@@ -55,6 +57,9 @@ internal class ShareDelegateTest {
 
     @MockBean
     private lateinit var storyApi: StoryApi
+
+    @MockBean
+    private lateinit var userApi: UserApi
 
     @MockBean
     private lateinit var twitterProvider: TwitterProvider
@@ -77,6 +82,9 @@ internal class ShareDelegateTest {
 
         twitter = mock()
         doReturn(twitter).whenever(twitterProvider).getTwitter(any(), any(), any())
+
+        val user = createUser()
+        doReturn(GetUserResponse(user)).whenever(userApi).get(any())
     }
 
     @Test
@@ -167,11 +175,16 @@ internal class ShareDelegateTest {
         attributes = attributes
     )
 
+    private fun createUser(testUser: Boolean = false) = User(
+        id = 1,
+        testUser = testUser
+    )
+
     private fun createStatus(id: Long, twitterId: Long): Status {
         val status = mock<Status>()
         doReturn(id).whenever(status).id
 
-        val user = mock<User>()
+        val user = mock<twitter4j.User>()
         doReturn(twitterId).whenever(user).id
         doReturn(user).whenever(status).user
 
