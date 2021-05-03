@@ -8,29 +8,26 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.test.context.jdbc.Sql
-import org.springframework.web.client.RestTemplate
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(value = ["/db/clean.sql", "/db/RevokeSecretController.sql"])
-internal class RevokeSecretControllerTest {
+internal class RevokeSecretControllerTest : ControllerTestBase() {
     @LocalServerPort
     private val port = 0
-
-    private lateinit var url: String
-
-    private val rest: RestTemplate = RestTemplate()
 
     @Autowired
     private lateinit var dao: SecretRepository
 
     @BeforeEach
-    fun setUp() {
-        url = "http://localhost:$port/v1/twitter/secrets/{id}"
+    override fun setUp() {
+        super.setUp()
+        login("twitter")
     }
 
     @Test
     operator fun invoke() {
-        rest.delete(url, "1")
+        val url = "http://localhost:$port/v1/twitter/secrets/1"
+        delete(url)
 
         val secret = dao.findById(1)
         assertFalse(secret.isPresent)

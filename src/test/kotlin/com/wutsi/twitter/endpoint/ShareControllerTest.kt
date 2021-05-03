@@ -34,7 +34,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.test.context.jdbc.Sql
-import org.springframework.web.client.RestTemplate
 import twitter4j.Status
 import twitter4j.Twitter
 import twitter4j.TwitterException
@@ -46,13 +45,9 @@ import kotlin.test.assertTrue
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
-internal class ShareControllerTest {
+internal class ShareControllerTest : ControllerTestBase() {
     @LocalServerPort
     private val port = 0
-
-    private lateinit var url: String
-
-    private val rest: RestTemplate = RestTemplate()
 
     @Autowired
     private lateinit var dao: ShareRepository
@@ -80,8 +75,8 @@ internal class ShareControllerTest {
     private val shortenUrl = "https://bit.ly/123"
 
     @BeforeEach
-    fun setUp() {
-        url = "http://127.0.0.1:$port/v1/twitter/share?story-id={story-id}"
+    override fun setUp() {
+        super.setUp()
 
         val bitly = mock<BitlyUrlShortener>()
         doReturn(shortenUrl).whenever(bitly).shorten(any())
@@ -92,6 +87,8 @@ internal class ShareControllerTest {
 
         val user = createUser()
         doReturn(GetUserResponse(user)).whenever(userApi).get(any())
+
+        login("twitter")
     }
 
     @Test
@@ -106,7 +103,8 @@ internal class ShareControllerTest {
         val status = createStatus(11L, 111L)
         doReturn(status).whenever(twitter).updateStatus(anyString())
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         val shares = dao.findAll().toList()[0]
         assertEquals(status.id, shares.statusId)
@@ -131,7 +129,8 @@ internal class ShareControllerTest {
         doReturn("Failed !!!").whenever(ex).errorMessage
         doThrow(ex).whenever(twitter).updateStatus(anyString())
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         val shares = dao.findAll().toList()[0]
         assertNull(shares.statusId)
@@ -150,7 +149,8 @@ internal class ShareControllerTest {
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter).updateStatus("This is nice https://bit.ly/123")
     }
@@ -163,7 +163,8 @@ internal class ShareControllerTest {
         val story = createStory(socialMediaMessage = null)
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter).updateStatus("${story.title} https://bit.ly/123")
     }
@@ -180,7 +181,8 @@ internal class ShareControllerTest {
         val status = createStatus(11L, 111L)
         doReturn(status).whenever(twitter).updateStatus(anyString())
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter).updateStatus("${story.title} https://bit.ly/123")
 
@@ -200,7 +202,8 @@ internal class ShareControllerTest {
         val story = createStory(socialMediaMessage = null, userId = 999)
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter, never()).updateStatus("${story.title} https://bit.ly/123")
         assertTrue(dao.findAll().toList().isEmpty())
@@ -221,7 +224,8 @@ internal class ShareControllerTest {
         val story = createStory(socialMediaMessage = null, userId = 999)
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter, never()).updateStatus(anyString())
 
@@ -242,7 +246,8 @@ internal class ShareControllerTest {
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter, never()).updateStatus(anyString())
     }
@@ -257,7 +262,8 @@ internal class ShareControllerTest {
 
         doReturn(null).whenever(twitterProvider).getTwitter(any(), any(), any())
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter, never()).updateStatus(anyString())
     }
@@ -273,7 +279,8 @@ internal class ShareControllerTest {
         val status = createStatus(11L, 111L)
         doReturn(status).whenever(twitter).updateStatus(anyString())
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter).retweetStatus(11L)
     }
@@ -289,7 +296,8 @@ internal class ShareControllerTest {
         val status = createStatus(11L, 111L)
         doReturn(status).whenever(twitter).updateStatus(anyString())
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter, never()).retweetStatus(any())
     }
@@ -308,7 +316,8 @@ internal class ShareControllerTest {
         val status = createStatus(11L, 111L)
         doReturn(status).whenever(twitter).updateStatus(anyString())
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         verify(twitter, never()).retweetStatus(any())
     }
@@ -324,7 +333,8 @@ internal class ShareControllerTest {
         val status = createStatus(11L, 111L)
         doReturn(status).whenever(twitter).updateStatus(anyString())
 
-        rest.getForEntity(url, Any::class.java, "123")
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
 
         val payload = argumentCaptor<TwitterSharedEventPayload>()
         verify(eventStream).publish(eq(TwitterEventType.SHARED.urn), payload.capture())

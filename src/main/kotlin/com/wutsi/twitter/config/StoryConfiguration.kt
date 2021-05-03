@@ -1,12 +1,13 @@
 package com.wutsi.twitter.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.wutsi.security.apikey.ApiKeyRequestInterceptor
 import com.wutsi.story.StoryApi
 import com.wutsi.story.StoryApiBuilder
-import feign.RequestInterceptor
+import com.wutsi.tracing.TracingRequestInterceptor
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.`annotation`.Bean
-import org.springframework.context.`annotation`.Configuration
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 
@@ -14,7 +15,8 @@ import org.springframework.core.env.Profiles
 public class StoryConfiguration(
     @Autowired private val env: Environment,
     @Autowired private val mapper: ObjectMapper,
-    @Autowired private val tracingRequestInterceptor: RequestInterceptor
+    @Autowired private val tracingRequestInterceptor: TracingRequestInterceptor,
+    @Autowired private val apiKeyRequestInterceptor: ApiKeyRequestInterceptor
 ) {
     @Bean
     fun storyApi(): StoryApi =
@@ -22,7 +24,7 @@ public class StoryConfiguration(
             .build(
                 env = storyEnvironment(),
                 mapper = mapper,
-                interceptors = listOf(tracingRequestInterceptor)
+                interceptors = listOf(tracingRequestInterceptor, apiKeyRequestInterceptor)
             )
 
     fun storyEnvironment(): com.wutsi.story.Environment =
