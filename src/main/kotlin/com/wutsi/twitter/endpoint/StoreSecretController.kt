@@ -14,7 +14,7 @@ public class StoreSecretController(
     private val `delegate`: StoreSecretDelegate
 ) {
     @PostMapping("/v1/twitter/secrets")
-    @PreAuthorize(value = "hasAuthority('twitter')")
+    @PreAuthorize(value = "hasAuthority('twitter-manage')")
     public fun invoke(@Valid @RequestBody request: StoreSecretRequest): StoreSecretResponse =
         delegate.invoke(request)
 }

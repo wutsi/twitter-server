@@ -23,7 +23,7 @@ internal class StoreSecretControllerTest : ControllerTestBase() {
 
     @BeforeEach
     override fun setUp() {
-        login("twitter")
+        login("twitter-manage")
     }
 
     @Test

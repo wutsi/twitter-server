@@ -1,9 +1,9 @@
 package com.wutsi.twitter.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.wutsi.platform.security.apikey.ApiKeyRequestInterceptor
 import com.wutsi.post.PostApi
 import com.wutsi.post.PostApiBuilder
-import com.wutsi.security.apikey.ApiKeyRequestInterceptor
 import com.wutsi.tracing.TracingRequestInterceptor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean

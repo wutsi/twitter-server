@@ -1,7 +1,7 @@
 package com.wutsi.twitter.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.wutsi.security.apikey.ApiKeyRequestInterceptor
+import com.wutsi.platform.security.apikey.ApiKeyRequestInterceptor
 import com.wutsi.tracing.TracingRequestInterceptor
 import com.wutsi.user.UserApi
 import com.wutsi.user.UserApiBuilder

@@ -21,7 +21,7 @@ internal class RevokeSecretControllerTest : ControllerTestBase() {
     @BeforeEach
     override fun setUp() {
         super.setUp()
-        login("twitter")
+        login("twitter-manage")
     }
 
     @Test

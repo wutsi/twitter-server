@@ -1,3 +1,4 @@
+
 name: pull_request
 
 on: [ pull_request ]
@@ -21,7 +22,7 @@ jobs:
       - name: JDK
         uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
+          distribution: 'zulu'
           java-version: 11
       - name: Build
         env:

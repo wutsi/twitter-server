@@ -27,7 +27,7 @@ paths:
           description: Success
       security:
         - api_key:
-            - twitter
+            - twitter-share
       tags:
         - Twitter
   /v1/twitter/secrets:
@@ -53,7 +53,7 @@ paths:
                 $ref: '#/components/schemas/StoreSecretResponse'
       security:
         - api_key:
-            - twitter
+            - twitter-manage
       tags:
         - Twitter
   '/v1/twitter/secrets/{id}':
@@ -73,7 +73,7 @@ paths:
           description: Success
       security:
         - api_key:
-            - twitter
+            - twitter-manage
       tags:
         - Twitter
 components:

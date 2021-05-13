@@ -88,7 +88,7 @@ internal class ShareControllerTest : ControllerTestBase() {
         val user = createUser()
         doReturn(GetUserResponse(user)).whenever(userApi).get(any())
 
-        login("twitter")
+        login("twitter-share")
     }
 
     @Test
