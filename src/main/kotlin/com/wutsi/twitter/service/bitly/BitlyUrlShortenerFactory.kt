@@ -3,8 +3,8 @@ package com.wutsi.twitter.service.bitly
 import com.wutsi.bitly.BitlyUrlShortener
 import com.wutsi.bitly.DefaultBitlyUrlShortener
 import com.wutsi.bitly.NullBitlyUrlShortener
+import com.wutsi.site.SiteAttribute
 import com.wutsi.site.dto.Site
-import com.wutsi.twitter.SiteAttribute
 import org.springframework.stereotype.Service
 
 @Service

@@ -8,6 +8,10 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.wutsi.bitly.BitlyUrlShortener
 import com.wutsi.site.SiteApi
+import com.wutsi.site.SiteAttribute.TWITTER_CLIENT_ID
+import com.wutsi.site.SiteAttribute.TWITTER_CLIENT_SECRET
+import com.wutsi.site.SiteAttribute.TWITTER_ENABLED
+import com.wutsi.site.SiteAttribute.TWITTER_USER_ID
 import com.wutsi.site.dto.Attribute
 import com.wutsi.site.dto.GetSiteResponse
 import com.wutsi.site.dto.Site
@@ -15,10 +19,6 @@ import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.GetStoryResponse
 import com.wutsi.story.dto.Story
 import com.wutsi.stream.EventStream
-import com.wutsi.twitter.SiteAttribute.CLIENT_ID
-import com.wutsi.twitter.SiteAttribute.CLIENT_SECRET
-import com.wutsi.twitter.SiteAttribute.ENABLED
-import com.wutsi.twitter.SiteAttribute.USER_ID
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.service.bitly.BitlyUrlShortenerFactory
 import com.wutsi.twitter.service.twitter.TwitterProvider
@@ -163,10 +163,10 @@ internal class ShareDelegateTest {
 
     private fun createSite(
         attributes: List<Attribute> = listOf(
-            Attribute(ENABLED.urn, "true"),
-            Attribute(CLIENT_SECRET.urn, "client-secret"),
-            Attribute(CLIENT_ID.urn, "client-id"),
-            Attribute(USER_ID.urn, "666")
+            Attribute(TWITTER_ENABLED.urn, "true"),
+            Attribute(TWITTER_CLIENT_SECRET.urn, "client-secret"),
+            Attribute(TWITTER_CLIENT_ID.urn, "client-id"),
+            Attribute(TWITTER_USER_ID.urn, "666")
         )
     ) = Site(
         id = 1L,

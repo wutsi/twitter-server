@@ -11,6 +11,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.wutsi.bitly.BitlyUrlShortener
 import com.wutsi.site.SiteApi
+import com.wutsi.site.SiteAttribute
 import com.wutsi.site.dto.Attribute
 import com.wutsi.site.dto.GetSiteResponse
 import com.wutsi.site.dto.Site
@@ -18,7 +19,6 @@ import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.GetStoryResponse
 import com.wutsi.story.dto.Story
 import com.wutsi.stream.EventStream
-import com.wutsi.twitter.SiteAttribute
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.event.TwitterEventType
 import com.wutsi.twitter.event.TwitterSharedEventPayload
@@ -214,9 +214,9 @@ internal class ShareControllerTest : ControllerTestBase() {
     fun `do not tweet when sharing a story having author with no twitter secret - no primary user set`() {
         val site = createSite(
             attributes = listOf(
-                Attribute(SiteAttribute.ENABLED.urn, "true"),
-                Attribute(SiteAttribute.CLIENT_SECRET.urn, "client-secret"),
-                Attribute(SiteAttribute.CLIENT_ID.urn, "client-id")
+                Attribute(SiteAttribute.TWITTER_ENABLED.urn, "true"),
+                Attribute(SiteAttribute.TWITTER_CLIENT_SECRET.urn, "client-secret"),
+                Attribute(SiteAttribute.TWITTER_CLIENT_ID.urn, "client-id")
             )
         )
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
@@ -237,8 +237,8 @@ internal class ShareControllerTest : ControllerTestBase() {
     fun `do not tweet when flag not enabled`() {
         val site = createSite(
             attributes = listOf(
-                Attribute(SiteAttribute.CLIENT_SECRET.urn, "client-secret"),
-                Attribute(SiteAttribute.CLIENT_ID.urn, "client-id"),
+                Attribute(SiteAttribute.TWITTER_CLIENT_SECRET.urn, "client-secret"),
+                Attribute(SiteAttribute.TWITTER_CLIENT_ID.urn, "client-id"),
             )
         )
         doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
@@ -355,10 +355,10 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     private fun createSite(
         attributes: List<Attribute> = listOf(
-            Attribute(SiteAttribute.ENABLED.urn, "true"),
-            Attribute(SiteAttribute.CLIENT_SECRET.urn, "client-secret"),
-            Attribute(SiteAttribute.CLIENT_ID.urn, "client-id"),
-            Attribute(SiteAttribute.USER_ID.urn, "666")
+            Attribute(SiteAttribute.TWITTER_ENABLED.urn, "true"),
+            Attribute(SiteAttribute.TWITTER_CLIENT_SECRET.urn, "client-secret"),
+            Attribute(SiteAttribute.TWITTER_CLIENT_ID.urn, "client-id"),
+            Attribute(SiteAttribute.TWITTER_USER_ID.urn, "666")
         )
     ) = Site(
         id = 1L,
