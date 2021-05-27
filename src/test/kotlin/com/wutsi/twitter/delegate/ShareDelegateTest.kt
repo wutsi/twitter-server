@@ -7,18 +7,16 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.wutsi.bitly.BitlyUrlShortener
-import com.wutsi.site.SiteApi
+import com.wutsi.platform.site.SiteProvider
 import com.wutsi.site.SiteAttribute.TWITTER_CLIENT_ID
 import com.wutsi.site.SiteAttribute.TWITTER_CLIENT_SECRET
 import com.wutsi.site.SiteAttribute.TWITTER_ENABLED
 import com.wutsi.site.SiteAttribute.TWITTER_USER_ID
 import com.wutsi.site.dto.Attribute
-import com.wutsi.site.dto.GetSiteResponse
 import com.wutsi.site.dto.Site
 import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.GetStoryResponse
 import com.wutsi.story.dto.Story
-import com.wutsi.stream.EventStream
 import com.wutsi.twitter.dao.ShareRepository
 import com.wutsi.twitter.service.bitly.BitlyUrlShortenerFactory
 import com.wutsi.twitter.service.twitter.TwitterProvider
@@ -53,7 +51,7 @@ internal class ShareDelegateTest {
     private lateinit var dao: ShareRepository
 
     @MockBean
-    private lateinit var siteApi: SiteApi
+    private lateinit var siteProvider: SiteProvider
 
     @MockBean
     private lateinit var storyApi: StoryApi
@@ -69,10 +67,9 @@ internal class ShareDelegateTest {
     @MockBean
     private lateinit var bitlyFactory: BitlyUrlShortenerFactory
 
-    @MockBean
-    private lateinit var eventStream: EventStream
-
     private val shortenUrl = "https://bit.ly/123"
+
+    private lateinit var site: Site
 
     @BeforeEach
     fun setUp() {
@@ -85,13 +82,13 @@ internal class ShareDelegateTest {
 
         val user = createUser()
         doReturn(GetUserResponse(user)).whenever(userApi).get(any())
+
+        site = createSite()
+        doReturn(site).whenever(siteProvider).get(1)
     }
 
     @Test
     fun `save message to DB when sharing post`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123)
 
@@ -112,9 +109,6 @@ internal class ShareDelegateTest {
 
     @Test
     fun `tweet when sharing a post`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -125,9 +119,6 @@ internal class ShareDelegateTest {
 
     @Test
     fun `tweet when sharing a post without link`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -138,9 +129,6 @@ internal class ShareDelegateTest {
 
     @Test
     fun `tweet picture when sharing a post with picture`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 

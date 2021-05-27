@@ -10,10 +10,9 @@ import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.wutsi.bitly.BitlyUrlShortener
-import com.wutsi.site.SiteApi
+import com.wutsi.platform.site.SiteProvider
 import com.wutsi.site.SiteAttribute
 import com.wutsi.site.dto.Attribute
-import com.wutsi.site.dto.GetSiteResponse
 import com.wutsi.site.dto.Site
 import com.wutsi.story.StoryApi
 import com.wutsi.story.dto.GetStoryResponse
@@ -53,7 +52,7 @@ internal class ShareControllerTest : ControllerTestBase() {
     private lateinit var dao: ShareRepository
 
     @MockBean
-    private lateinit var siteApi: SiteApi
+    private lateinit var siteProvider: SiteProvider
 
     @MockBean
     private lateinit var storyApi: StoryApi
@@ -74,6 +73,8 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     private val shortenUrl = "https://bit.ly/123"
 
+    lateinit var site: Site
+
     @BeforeEach
     override fun setUp() {
         super.setUp()
@@ -88,15 +89,15 @@ internal class ShareControllerTest : ControllerTestBase() {
         val user = createUser()
         doReturn(GetUserResponse(user)).whenever(userApi).get(any())
 
+        site = createSite()
+        doReturn(site).whenever(siteProvider).get(1)
+
         login("twitter-share")
     }
 
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
     fun `save message to DB when sharing story`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -118,9 +119,6 @@ internal class ShareControllerTest : ControllerTestBase() {
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
     fun `save error to DB when sharing story fails`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -143,9 +141,6 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     @Test
     fun `tweet when story sharing story with socialMediaMessage`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -157,9 +152,6 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     @Test
     fun `tweet when story sharing story  without socialMediaMessage`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory(socialMediaMessage = null)
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -172,9 +164,6 @@ internal class ShareControllerTest : ControllerTestBase() {
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
     fun `tweet using primary account when sharing a story having author with no twitter secret`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory(socialMediaMessage = null, userId = 999)
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -193,9 +182,6 @@ internal class ShareControllerTest : ControllerTestBase() {
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
     fun `do not tweet tweet using primary account when sharing a story having test-account with no twitter secret`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val user = createUser(id = 999, testUser = true)
         doReturn(GetUserResponse(user)).whenever(userApi).get(999)
 
@@ -219,7 +205,7 @@ internal class ShareControllerTest : ControllerTestBase() {
                 Attribute(SiteAttribute.TWITTER_CLIENT_ID.urn, "client-id")
             )
         )
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+        doReturn(site).whenever(siteProvider).get(1)
 
         val story = createStory(socialMediaMessage = null, userId = 999)
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
@@ -241,7 +227,7 @@ internal class ShareControllerTest : ControllerTestBase() {
                 Attribute(SiteAttribute.TWITTER_CLIENT_ID.urn, "client-id"),
             )
         )
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
+        doReturn(site).whenever(siteProvider).get(1)
 
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
@@ -254,9 +240,6 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     @Test
     fun `do not tween when twitter instance not available`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -270,9 +253,6 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     @Test
     fun `retweet when sharing a story from a non-primary user`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -287,9 +267,6 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     @Test
     fun `do not retweet when sharing a story from primary user`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory(userId = 666L)
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 
@@ -304,9 +281,6 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     @Test
     fun `do not retweet when sharing a story from test user`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val user = createUser(id = 2, testUser = true)
         doReturn(GetUserResponse(user)).whenever(userApi).get(2)
 
@@ -324,9 +298,6 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     @Test
     fun `event send when sharing a story`() {
-        val site = createSite()
-        doReturn(GetSiteResponse(site)).whenever(siteApi).get(1L)
-
         val story = createStory()
         doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
 

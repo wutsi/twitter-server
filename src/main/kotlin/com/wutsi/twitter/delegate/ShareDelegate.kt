@@ -1,6 +1,6 @@
 package com.wutsi.twitter.`delegate`
 
-import com.wutsi.site.SiteApi
+import com.wutsi.platform.site.SiteProvider
 import com.wutsi.site.SiteAttribute
 import com.wutsi.site.dto.Site
 import com.wutsi.story.StoryApi
@@ -28,7 +28,7 @@ import javax.transaction.Transactional
 
 @Service
 public class ShareDelegate(
-    @Autowired private val siteApi: SiteApi,
+    @Autowired private val siteProvider: SiteProvider,
     @Autowired private val storyApi: StoryApi,
     @Autowired private val userApi: UserApi,
     @Autowired private val shareDao: ShareRepository,
@@ -50,7 +50,7 @@ public class ShareDelegate(
         postId: Long? = null
     ) {
         val story = storyApi.get(storyId).story
-        val site = siteApi.get(story.siteId).site
+        val site = siteProvider.get(story.siteId)
         if (!enabled(site)) {
             LOGGER.warn("Site#${story.siteId} doesn't have Twitter enabled. Ignoring the request")
             return
