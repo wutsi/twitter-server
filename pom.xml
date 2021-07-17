@@ -30,7 +30,7 @@
     <kotlin-mockito.version>2.2.0</kotlin-mockito.version>
     <klint.version>0.41.0</klint.version>
     <maven-antrun-plugin.version>3.0.0</maven-antrun-plugin.version>
-    <hikari-cp.version>4.0.3</hikari-cp.version>
+    <hikari-cp.version>5.0.0</hikari-cp.version>
     <postgresql.version>42.2.23</postgresql.version>
     <flyway.version>7.11.2</flyway.version>
     <twitter4j.version>4.0.7</twitter4j.version>
