@@ -18,6 +18,7 @@ import com.wutsi.user.UserApi
 import com.wutsi.user.dto.User
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import twitter4j.Status
 import twitter4j.StatusUpdate
@@ -35,7 +36,8 @@ public class ShareDelegate(
     @Autowired private val secretDao: SecretRepository,
     @Autowired private val bitly: BitlyUrlShortenerFactory,
     @Autowired private val twitterProvider: TwitterProvider,
-    @Autowired private val eventStream: EventStream
+    @Autowired private val eventStream: EventStream,
+    @Value("\${wutsi.blacklist}") private val userBlacklist: Long
 ) {
     companion object {
         private val LOGGER = LoggerFactory.getLogger(ShareDelegate::class.java)
@@ -55,6 +57,10 @@ public class ShareDelegate(
             LOGGER.warn("Site#${story.siteId} doesn't have Twitter enabled. Ignoring the request")
             return
         }
+        if (blacklisted(story.userId)) {
+            LOGGER.warn("User#${story.userId} is blacklisted")
+            return
+        }
         val user = userApi.get(story.userId).user
 
         val secret = findSecret(story, user, site) ?: return
@@ -69,6 +75,9 @@ public class ShareDelegate(
             )
         }
     }
+
+    private fun blacklisted(userId: Long): Boolean =
+        userBlacklist == userId
 
     private fun findSecret(story: Story, user: User, site: Site): SecretEntity? {
         // Find account of the author of the story

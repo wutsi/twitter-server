@@ -70,6 +70,7 @@ wutsi:
   security:
     api-key:
       id: "00000"
+  blacklist: 2142  # weedhemps
 
 logging:
   level:

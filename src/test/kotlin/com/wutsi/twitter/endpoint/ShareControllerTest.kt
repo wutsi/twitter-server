@@ -197,6 +197,23 @@ internal class ShareControllerTest : ControllerTestBase() {
 
     @Test
     @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
+    fun `do not tweet tweet blacklist users`() {
+        val blacklistUserId = 2142L
+        val user = createUser(id = blacklistUserId)
+        doReturn(GetUserResponse(user)).whenever(userApi).get(blacklistUserId)
+
+        val story = createStory(socialMediaMessage = null, userId = blacklistUserId)
+        doReturn(GetStoryResponse(story)).whenever(storyApi).get(123L)
+
+        val url = "http://127.0.0.1:$port/v1/twitter/share?story-id=123"
+        get(url, Any::class.java)
+
+        verify(twitter, never()).updateStatus("${story.title} https://bit.ly/123")
+        assertTrue(dao.findAll().toList().isEmpty())
+    }
+
+    @Test
+    @Sql(value = ["/db/clean.sql", "/db/ShareController.sql"])
     fun `do not tweet when sharing a story having author with no twitter secret - no primary user set`() {
         val site = createSite(
             attributes = listOf(
